@@ -1,0 +1,35 @@
+
+# FastAPI and server
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+
+# Google Cloud services
+google-cloud-vision==3.7.0
+google-genai==0.2.2
+
+# Data processing
+geopy==2.4.1
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.25.0
+numpy
+pandas==2.1.4
+
+# ML & Semantic Search
+sentence-transformers
+scikit-learn
+
+# Image processing
+Pillow==10.4.0
+pdf2image==1.17.0
+
+# File handling
+python-multipart==0.0.12
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Streamlit UI
+streamlit==1.29.0
+plotly==5.18.0
+requests==2.31.0

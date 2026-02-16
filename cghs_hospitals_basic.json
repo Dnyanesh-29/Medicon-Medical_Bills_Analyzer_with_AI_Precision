@@ -1,0 +1,1640 @@
+[
+    {
+        "sr_no": 1.0,
+        "hospital_name": "AADHAR MULTISPECIALITY HOSPITAL - ICU",
+        "address": "Mumbai Pune Old Highway, Dehu Road, Pune 412101",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-65107896 +91 9225653800"
+    },
+    {
+        "sr_no": 2.0,
+        "hospital_name": "ACE HOSPITAL PUNE",
+        "address": "Garage Near Hotel Abhishek, 32/2 A,",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25434063 020-25434072"
+    },
+    {
+        "sr_no": 3.0,
+        "hospital_name": "BHARATI HOSPITAL",
+        "address": "Pune-Satara Road, Pune - 411043",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-24375182 020-24371116"
+    },
+    {
+        "sr_no": 4.0,
+        "hospital_name": "CHAITANYA HOSPITAL",
+        "address": "Police Chowky, Chaphekar Chowk,",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27355833 020-27350333"
+    },
+    {
+        "sr_no": 5.0,
+        "hospital_name": "DEOYANI MULTI SPECIALITY HOSPITAL",
+        "address": "Plot No. 121, Lane Number 4, Dahanukar Colony, Kothrud, Pune, Maharashtra 411038",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-39623962 020-39623983"
+    },
+    {
+        "sr_no": 6.0,
+        "hospital_name": "DR BANSAL HOSPITAL",
+        "address": "Mumbai-Pune Road Dehu Road Dehu Road, Opposite Bank Of India, Dehu Road, Pune,",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27671479 020-27674575"
+    },
+    {
+        "sr_no": 7.0,
+        "hospital_name": "GRANT MEDICAL FOUNDATION,RUBY HALL CLINIC",
+        "address": "40, Sassoon Road, Pune, Maharashtra 411001",
+        "nabh_status": "NABH/ NABL",
+        "contact_no": "020-26163391 020-26455100"
+    },
+    {
+        "sr_no": 8.0,
+        "hospital_name": "KOTBAGI HOSPITAL PVT. LTD.",
+        "address": "163, DP Road, Aundh, Pune, Maharashtra 411007",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-43100100 020-25882770"
+    },
+    {
+        "sr_no": 9.0,
+        "hospital_name": "KRISHNA HOSPITAL MANAGED BY SHASHWAT HOSPITALS PVT.LTD.",
+        "address": "Anjanwel, Plot 2, Prashant Society, Paud Road, Pune-411038",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-41403700 020-41403701 020-41403702"
+    },
+    {
+        "sr_no": 10.0,
+        "hospital_name": "LOKMANYA HOSPITAL CHINCHWAD",
+        "address": "314 / B, Telco Road Chinchwad Station Pune - 411033",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27456496 020-46606801 020-46606802 020-46606803"
+    },
+    {
+        "sr_no": 11.0,
+        "hospital_name": "LOKMANYA HOSPITALS PVT. LTD.",
+        "address": "Sector 24, PCNTDA, Tilak Road, Pradhikaran, Nigdi, Pune - 411044",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27657001 020-30612001 020-30612002 020-30612003"
+    },
+    {
+        "sr_no": 12.0,
+        "hospital_name": "NM WADIA INSTITUTE OF CARDIOLOGY",
+        "address": "32, Sassoon Road, Pune - 411001",
+        "nabh_status": "NABH",
+        "contact_no": "020-26058136 020-26058138 020-26058141 020-26058142 020-26058546"
+    },
+    {
+        "sr_no": 13.0,
+        "hospital_name": "NOBLE HOSPITAL PVT. LTD",
+        "address": "153, Magarpatta City Road, Hadapsar, Pune, Maharashtra 411013",
+        "nabh_status": "NABH",
+        "contact_no": "020-66285000 020-66295000"
+    },
+    {
+        "sr_no": 14.0,
+        "hospital_name": "OM HOSPITAL",
+        "address": "Sy No. 201/5 Alandi Road, Hutatma Chowk, Bhosari, Pune - 411039",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27128043 +91 8888825601"
+    },
+    {
+        "sr_no": 15.0,
+        "hospital_name": "PAWANA HOSPITAL",
+        "address": "Somatane Phata, Tal - Maval, Dist. Pune- 410506",
+        "nabh_status": "Non-NABH",
+        "contact_no": "02114-221076 02114-221077 +91 8308817880"
+    },
+    {
+        "sr_no": 16.0,
+        "hospital_name": "RAKSHAK HOSPITAL",
+        "address": "No. 52/1/1, Mandakini Apartment, Shreeram Nagar Society, Chandan Nagar. Kharadi, Pune- Nagar Rd, Pune 411014",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-40770777 +91 9096052781"
+    },
+    {
+        "sr_no": 17.0,
+        "hospital_name": "RANKA HOSPITAL",
+        "address": "Plot No 157/ 5, Opp: CPWD Office Mukund Nagar, Pune - 411037",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-24261600 020-24261530"
+    },
+    {
+        "sr_no": 18.0,
+        "hospital_name": "RAO NURSING HOME",
+        "address": "Survey. No. : 691A/1A- 1, CTS No. 1897-B, Pune-Satara Road, Bibwewadi, Pune - 411037",
+        "nabh_status": "NABH",
+        "contact_no": "020-24212915 020-24213381"
+    },
+    {
+        "sr_no": 19.0,
+        "hospital_name": "SADHU VASWANI MISSION'S MEDICAL COMPLEX - INLAKS BUDHRANI HOSPITAL & MN BUDHRANI CANCER INSTITUTE, KIRPALANI & KUNDANI EYE INSTITUTE, FABIANI BUDHRANI HEART INSTITUTE",
+        "address": "7 – 9, Koregaon Park, Pune – 411 001",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-66099999 020-26129080"
+    },
+    {
+        "sr_no": 20.0,
+        "hospital_name": "SAHYADRI HOSPITALS LIMITED'S SAHYADRI SPECIALITY HOSPITAL",
+        "address": "Sy No. 185A,199,200A- B, 201, Near Hermes Heritage, Phase II Shastri Nagar, Yerawada, Pune 411006",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-67271111"
+    },
+    {
+        "sr_no": 21.0,
+        "hospital_name": "SAHYADRI HOSPITAL LIMITED'S SAHYADRI SPECIALITY HOSPITAL",
+        "address": "Plot No. 30 C, Erandwane, Karve Road, Pune – 411 004,",
+        "nabh_status": "NABH",
+        "contact_no": "020-67213000 020-25403040"
+    },
+    {
+        "sr_no": 22.0,
+        "hospital_name": "SAI SHREE HOSPITAL AND JOINT REPLACEMENT CENTER",
+        "address": "251/252, Opp BSNL Telephone Exchange, Near DAV School, Aundh, Pune 411007",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-41088600"
+    },
+    {
+        "sr_no": 23.0,
+        "hospital_name": "SAI SNEH HOSPITAL",
+        "address": "Pune-Satara highway, Opp. PMT Bus depot, Katraj, Pune, 411046",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-26959208 020-26959209"
+    },
+    {
+        "sr_no": 24.0,
+        "hospital_name": "SAINATH HOSPITAL",
+        "address": "Sant Nagar, Sector 4 Pune- Nasik Highway, Moshi Pradhikaran, Moshi Pune - 412105",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-67313000"
+    },
+    {
+        "sr_no": 25.0,
+        "hospital_name": "SANJEEVAN HOSPITAL, MANAGED BY SHASHWAT MULTISPECIALITY HOSPITALS, INDIA PVT. LTD",
+        "address": "23, Off Karve Road, Erandwane, Pune, Maharashtra 411004",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-66093259 020-67250000"
+    },
+    {
+        "sr_no": 26.0,
+        "hospital_name": "SANJEEVANI HOSPITAL",
+        "address": "N D A Road, Uttam Nagar, Pune-411023",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25290057"
+    },
+    {
+        "sr_no": 27.0,
+        "hospital_name": "SANT DNYANESHWAR HOSPITAL",
+        "address": "Hira Plaza, Pune- Nasik Highway, Bhosari  Pune - 411039",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27119494 020-27129494"
+    },
+    {
+        "sr_no": 28.0,
+        "hospital_name": "SHASHWAT HEALTH SERVICES PVT. LTD",
+        "address": "22, Happy Clony, Kothrud Kothrud Pune-411038",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-67296666 020-67296600"
+    },
+    {
+        "sr_no": 29.0,
+        "hospital_name": "SHASHWAT HOSPITAL (AUNDH)",
+        "address": "Sy. No. 251/1 Opp: Dav School New Building, Near Aundh Telephone Exchange, Baner, Pune - 411007",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-67296464 020-67296429"
+    },
+    {
+        "sr_no": 30.0,
+        "hospital_name": "SHENDKAR HEALTHCARE AND HOPITALITY SERVICES PVT LTD. GLOBAL HOSPITAL AND RESEARCH INSTITUTE",
+        "address": "577 / 2, Off Sinhagad Road,Near Dattawadi Police Chowky, Dattawadi, Pune 411030",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-66846600"
+    },
+    {
+        "sr_no": 31.0,
+        "hospital_name": "SUSHRUT MEDICAL CARE AND RESEARCH SOCIETY'S HARDIKAR HOSPITAL",
+        "address": "1160/61,University Road, Shivajinagar, Pune-411 005",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25535326 020-25535327"
+    },
+    {
+        "sr_no": 32.0,
+        "hospital_name": "VINOD MEMORIAL MULTISPECIALITY HOSPITAL",
+        "address": "CTS No. 285, Survey No. 113, Alandi Rd, Vishrantwadi, Pune - 411015",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-65107306"
+    },
+    {
+        "sr_no": 33.0,
+        "hospital_name": "SHARADA CLINIC",
+        "address": "408/1, Near Ekbote Colony, Ghorpadi Peth, Shankarseth Road, Swargate Pune- 411042",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-26452290"
+    },
+    {
+        "sr_no": 34.0,
+        "hospital_name": "MEDIPOINT HOSPITAL PRIVATE LIMITED",
+        "address": "S.No. 241/1 ,New D.P.Road, Aundh-Baner Road Pune - 411007",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-39841200"
+    },
+    {
+        "sr_no": 35.0,
+        "hospital_name": "SANGAMNERKAR HOSPITAL Empanelled w.e.f. 13/03/2015",
+        "address": "45 A/1B VADGAONSHERI, NAGAR ROAD PUNE 411 014",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-65001448"
+    },
+    {
+        "sr_no": 36.0,
+        "hospital_name": "COLONY NURSING HOME Empanelled w.e.f. 13/03/2015",
+        "address": "50/51 LAXMI PARK COLONY, NAVIPETH, PUNE 411030",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-66871000"
+    },
+    {
+        "sr_no": 37.0,
+        "hospital_name": "ASHWINI MEDICAL FOUNDATION'S MORAYA MULTISPECIALTY HOSPITAL Empanelled w.e.f. 13/03/2015",
+        "address": "POWERHOUSE CHOWK, CHINCHWAD, PUNE - 411 033",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-67306500/01"
+    },
+    {
+        "sr_no": 38.0,
+        "hospital_name": "JEHANGIR HOSPITAL Empanelled w.e.f. 13/03/2015",
+        "address": "32, Sassoon Road, Pune, Maharashtra 411001",
+        "nabh_status": "NABH",
+        "contact_no": "020-66811000"
+    },
+    {
+        "sr_no": 39.0,
+        "hospital_name": "KAVADE NURSING HOME Empanelled w.e.f. 13/03/2015",
+        "address": "NDA ROAD, UTTAM NAGAR, PUNE - 411 023",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25290110 020-25291793"
+    },
+    {
+        "sr_no": 40.0,
+        "hospital_name": "PIONEER HOSPITAL Empanelled w.e.f. 13/03/2015",
+        "address": "349-351, DIAMOND COMMERCIAL COMPLEX, SOMATANE PHATA; TAL. MAVAL; PUNE - 410506",
+        "nabh_status": "Non-NABH",
+        "contact_no": "0211-4221010"
+    },
+    {
+        "sr_no": 41.0,
+        "hospital_name": "SATYANAND HOSPITAL Empanelled w.e.f. 13/03/2015",
+        "address": "OPP: KONARK PURAM; KONDHWA, PUNE - 411 048",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-26838194"
+    },
+    {
+        "sr_no": 42.0,
+        "hospital_name": "MAKAN HOSPITAL Empanelled w.e.f. 13/03/2015",
+        "address": "GANGA NAGAR, SANGVI, PUNE 411 027",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27281175; 020- 27280278"
+    },
+    {
+        "sr_no": 43.0,
+        "hospital_name": "IMAX MULTISPECIALTY HOSPITAL Empanelled w.e.f. 13/03/2015",
+        "address": "PUNE NAGAR ROAD, SANT TUKARAM NAGAR, OPP: KESNAND PHATA, WAGHOLI, PUNE 412207",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-65285111; 65284111"
+    },
+    {
+        "sr_no": 44.0,
+        "hospital_name": "KOHAKADE HOSPITAL Empanelled w.e.f. 8/12/2014",
+        "address": "Samrat Ashok Rd, Chandan Nagar Pune, Maharashtra 411014",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27019002"
+    },
+    {
+        "sr_no": 45.0,
+        "hospital_name": "DEENDAYAL MEMORIAL HOSPITAL Empanelled w.e.f. 22/12/2014",
+        "address": "926. F.C. Road, Shivaji Nagar, Pune - 411 005",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-66498888"
+    },
+    {
+        "sr_no": 46.0,
+        "hospital_name": "KARNE HOSPITAL PVT. LTD. Empanelled w.e.f. 22/12/2014",
+        "address": "Krishna Chambers, Near Laxmi Narayan Theater, Pune-Satara Road, Pune - 411 037",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-24264213"
+    },
+    {
+        "sr_no": 47.0,
+        "hospital_name": "Dhansahree Hospital Empanelled w.e.f. 02/02/2015",
+        "address": "G-P/66; Opp: K. Bajaj School, MIDC Chinchwad, Pune - 411 019",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27370589 020-27370590"
+    },
+    {
+        "sr_no": 48.0,
+        "hospital_name": "DR.POTDAR DENTAL CARE CENTRE",
+        "address": "Sant Bhoomi Society, Bldg No. 2/4, Behind Nigdi bus Stop, Mumai Pune Rd, Nigdi. Pune - 411044",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020 2766 2267"
+    },
+    {
+        "sr_no": 49.0,
+        "hospital_name": "TEETHZZ DENTAL CLINIC",
+        "address": "208, Sterling Center, Above Barista Cafe, Opp. Hotel Aurora Towers, M.G. Road, Camp, Pune - 411001",
+        "nabh_status": "Non-NABH",
+        "contact_no": "2026054010"
+    },
+    {
+        "sr_no": 50.0,
+        "hospital_name": "KABRE ORTHO, SPINE & DENTAL CLINIC Empanelled w.e.f. 02/02/2015",
+        "address": "Plot No. SEI 4/1; D II Block, TELCO Road, Near KSB Pumps, MIDC Chinchwad, Pune 411 019",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27477777"
+    },
+    {
+        "sr_no": 51.0,
+        "hospital_name": "BHANDARI DENTAL CLINIC Empanelled w.e.f. 02/02/2015",
+        "address": "24, Sujay Garden Commercial Centre, Mukund Nagar, Pune - 411037",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-30481347"
+    },
+    {
+        "sr_no": 52.0,
+        "hospital_name": "AMEYA NETRALAYA",
+        "address": "2nd Floor, Sant Bhoomi Co- operative Society, Behind Nigdi Bus Stop, Nigdi, Pune, Maharashtra 411044",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27662060 020-27662069"
+    },
+    {
+        "sr_no": 53.0,
+        "hospital_name": "DIVYA EYE CLINIC",
+        "address": "2, Shakun Apartments, Above Bank of Maharastra, Sangavi Nagar, Aundh, Pune, Maharashtra 411007",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25881689"
+    },
+    {
+        "sr_no": 54.0,
+        "hospital_name": "DR. JADHAV EYE FOUNDATION RESEARCH AND DEVELOPMENT CENTRE",
+        "address": "Jadhav House, Bombay Sappers Colony, Near Kharadi Water Tank,, Behind D'Mellow Petrol Pump, Nagar Road, Pune, Maharashtra 411014",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-27036000 020-27033000"
+    },
+    {
+        "sr_no": 55.0,
+        "hospital_name": "GADKARI EYE CENTRE",
+        "address": "7, Surdarshan, Nal Stop, Opp Karve Road Tele Exchange, Erandawane, Pune, Maharashtra 411004",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25466808 020-25431395"
+    },
+    {
+        "sr_no": 56.0,
+        "hospital_name": "NATIONAL INSTITUTE OF OPHTHALMOLOGY",
+        "address": "1187/30, Off Ghole Road, Near Mahatama Phule Museum, Shivaji Nagar Pune, Maharashtra 411005",
+        "nabh_status": "NABH",
+        "contact_no": "020-25536369 020-41460100"
+    },
+    {
+        "sr_no": 57.0,
+        "hospital_name": "VASAN EYE CARE HOSPITAL (ENTERPRISE OF VASAN HEALTHCARE PVT LTD)",
+        "address": "GA Kulkarni Path, Near Karishma Society, Opp Siddharth Towers, Kothrud Pune, 411038",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-39890000"
+    },
+    {
+        "sr_no": 58.0,
+        "hospital_name": "WAGH EYE CLINIC",
+        "address": "1192/246, Mugut Apt. Ghole Road, Shivaji Nagar, Pune 411005",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25538090"
+    },
+    {
+        "sr_no": 59.0,
+        "hospital_name": "DISHA NETRALAYA Empanelled w.e.f. 13/03/2015",
+        "address": "21/459-A, YAMUNA NAGAR, NIGDI, PUNE - 411 044",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9822014401"
+    },
+    {
+        "sr_no": 60.0,
+        "hospital_name": "OM CLINIC (EYE CARE) Empanelled w.e.f. 13/03/2015",
+        "address": "30, LAKSHMI CLASSIC, PRATK NAGAR CHOWK, ALANDI ROAD, VISHRANTAWADI, PUNE - 411015",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-64017559"
+    },
+    {
+        "sr_no": 61.0,
+        "hospital_name": "PBMA'S H V DESAI EYE HOSPITAL",
+        "address": "93, Katraj-Hadapsar Bypass Road, Tarawade Vasti, Mohammed Wadi, Pune, Maharashtra 411060",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-26970043"
+    },
+    {
+        "sr_no": 62.0,
+        "hospital_name": "DR. PARBATANI'S EYE HOSPITAL & ADVANCED LASER CENTRE Empanelled w.e.f. 02/02/2015",
+        "address": "4th Floor, Siddharth Mansion, Shree Hospital, Opp: Agakhan Palace,  Shastrinagar Chowk, Pune",
+        "nabh_status": "Non-NABH",
+        "contact_no": "020-25513300"
+    },
+    {
+        "sr_no": 63.0,
+        "hospital_name": "GRANT MEDICAL FOUNDATION, WANAWADI",
+        "address": "59/6, Azad Nagar  Near Jhulelal Mandir, Kroot Memorial High School, Wanowarie Pune - 411040",
+        "nabh_status": "Non-NABL",
+        "contact_no": "020-66494949"
+    },
+    {
+        "sr_no": 64.0,
+        "hospital_name": "OM PATHOLOGY LABORATORY",
+        "address": "Trigun,1st floor, S.No 177, Plot No 2A,, Lokmanya Nagar, Sadashiv Peth, Pune, Maharashtra 411030",
+        "nabh_status": "Non-NABL",
+        "contact_no": "020-24331058 020-24339674 020-24327133"
+    },
+    {
+        "sr_no": 65.0,
+        "hospital_name": "SRL LIMITED",
+        "address": "Show Room No.1 & Shop No.7, First Floor, Matrix IT Park, Near Shopper's Stop, Old Pune-Mumbai Highway, Wakdewadi, Shivaji Nagar, Pune, Maharashtra 411005",
+        "nabh_status": "Non-NABL",
+        "contact_no": "020-30251200 020-30251202 020-30251203"
+    },
+    {
+        "sr_no": 66.0,
+        "hospital_name": "MEDIVISION DIAGNOSTIC CENTRE",
+        "address": "Patil Plaza,Ground Floor Shop No. 63-68, Opp: Mitra Mandal, Near Saras Baug, Pune, Maharashtra 411009",
+        "nabh_status": "Non-NABL",
+        "contact_no": "020-24468031 020-24468032 020-24468033"
+    },
+    {
+        "sr_no": 67.0,
+        "hospital_name": "Name of the Hospital",
+        "address": "Address",
+        "nabh_status": "Accreditatio n Status",
+        "contact_no": "Nodal Officer Mobile Number"
+    },
+    {
+        "sr_no": 68.0,
+        "hospital_name": "Apex Hospital (Borivali West)",
+        "address": "Vaishali Heights, Chandavakar Road, Borivali (W), Mumbai- 400 092",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7303414204 9320867015"
+    },
+    {
+        "sr_no": 69.0,
+        "hospital_name": "Apex Hospitals (Mulund)",
+        "address": "Apex Hospitals, CTS 23/9, Veen Nagar, Phase-2, Near Tulsi Pipe Line, Mulund(W), Mumbai- 400080",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8652837587"
+    },
+    {
+        "sr_no": 70.0,
+        "hospital_name": "Apex Multispeciality Hospitals",
+        "address": "Off Western Express Highway, Next to Su- Swagat restaurant, Dattapada Road, Borivali (E) - 400066",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8928385279 8433503962"
+    },
+    {
+        "sr_no": 71.0,
+        "hospital_name": "Ashtvinayak Hospital & Super Speciality Hospital",
+        "address": "Plot No. 10, Sector-6, Khanda Colony, Near Khandeswar Lake, New Panvel (W), Navi Mumbai - 410206",
+        "nabh_status": "NABH",
+        "contact_no": "9769541567 9920130129"
+    },
+    {
+        "sr_no": 72.0,
+        "hospital_name": "Asian Institute of Medical Science",
+        "address": "Plot No. P-72, Milap Nagar, MIDC, Dombivali (E), Mumbai - 421203",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8657460592 8291857955"
+    },
+    {
+        "sr_no": 73.0,
+        "hospital_name": "Balaji Hospital",
+        "address": "Victoria Road, Cross Lane No.Iii, Byculla(E) Mumbai-400027",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9987506082"
+    },
+    {
+        "sr_no": 74.0,
+        "hospital_name": "Dr. R.N.Patil's Suraj Hospital",
+        "address": "Plot No.1&1A, Sun Plam View Bldg, Sector- 15, Opp. Palm Beach Marg, Sanpada, Navi Mumbai- 400 705",
+        "nabh_status": "NABH",
+        "contact_no": "9920820636 9820332608"
+    },
+    {
+        "sr_no": 75.0,
+        "hospital_name": "Shah LifeLine Multispeciality Hospital LLP",
+        "address": "618/3-1, Sainath Road, Near Malad Subway, Off S V Road, Malad (West), Mumbai- 400064",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9324877886 9833803296"
+    },
+    {
+        "sr_no": 76.0,
+        "hospital_name": "M/s S. S. Vaidya Health Care Pvt. Ltd",
+        "address": "Dr. C. B. Vaidya Memorial Hospital, Opp. City Post Office, Tilak Chowk, Kalyan (W) 421301",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9769848969 9819117258 7506576010"
+    },
+    {
+        "sr_no": 77.0,
+        "hospital_name": "Mallika Hospital",
+        "address": "Sharma Estate, Next To Mina International Hotel, S. V. Road, Jogeshwari (W), Mumbai-400102",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9819419256 9833054261"
+    },
+    {
+        "sr_no": 78.0,
+        "hospital_name": "MPCT Hospital",
+        "address": "Plot No 7, Sector - 4, Sanpada, Navi Mumbai. 400705",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9702362927 9819414072"
+    },
+    {
+        "sr_no": 79.0,
+        "hospital_name": "Panacea Hospital",
+        "address": "Plot No. 105/106, Sector No. 08, New Panvel, Navi Mumbai 410206",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9768735226 8691933502"
+    },
+    {
+        "sr_no": 80.0,
+        "hospital_name": "Pinnacle Ortho Centre",
+        "address": "1st and 2nd Floor, Blue Nile, Chandanwari Signal, Panchpakhadi, Thane (W) 400 601",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8108772233"
+    },
+    {
+        "sr_no": 81.0,
+        "hospital_name": "Prachin Healthcare Multi-speciality Hospital",
+        "address": "Multi-Specialty Hospital, Plot No. 69/2, Near Hotel Garden, Panvel - 410206",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9619183258 8169367524"
+    },
+    {
+        "sr_no": 82.0,
+        "hospital_name": "Rane Hospital Pvt. Ltd",
+        "address": "37 Pestom Sugar, Road No. 2, Chembur, Mumbai-400089",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9920452297"
+    },
+    {
+        "sr_no": 83.0,
+        "hospital_name": "Riddhi Vinayak, Critical Care & Cardiac Centre",
+        "address": "559/1,Riddhi Vinayak Temple Lane, Near N. L. High School, S. V. Road, Malad (W), Mumbai-400 064",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9223186506 9221333027"
+    },
+    {
+        "sr_no": 84.0,
+        "hospital_name": "Riddhi Vinayak Multi Speciality Hospital",
+        "address": "Plot No. 302, Near Railway Carshed, Ahead of fun fiest on Yashwant Gaurav Ro, Virar Nalasopara link Road, Nalasopara (W), Distt. Palghar 401203",
+        "nabh_status": "NABH",
+        "contact_no": "8208093904 8446363885"
+    },
+    {
+        "sr_no": 85.0,
+        "hospital_name": "Shantiniketan Hospital",
+        "address": "E- Bldg. Ground Floor, Shantiniketan, L.B.S. Marg, Ghatkopar (West), Mumbai 400 086",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9137679658"
+    },
+    {
+        "sr_no": 86.0,
+        "hospital_name": "Shree Balaji Hospital",
+        "address": "Kurla Camp Road, Shanti Prakash Hall, Ulhasnagar, Thane, Mumbai 421005",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8975999850 9033527488 7021697180"
+    },
+    {
+        "sr_no": 87.0,
+        "hospital_name": "Shushrusha Heart Care Center & Multi Speciality Hospital",
+        "address": "Plot No.22- A, Plam Beach Road, Sector 6, Nerul, Navi Mumbai - 400706",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9324477783 8655070558"
+    },
+    {
+        "sr_no": 88.0,
+        "hospital_name": "Siddhivinayak Maternity & General Hospital",
+        "address": "2nd Floor, S-1, Vedant Complex, Vartak Nagar, above Nisarga Hotel, Thane (W) - 400 606",
+        "nabh_status": "NABH",
+        "contact_no": "9930902422"
+    },
+    {
+        "sr_no": 89.0,
+        "hospital_name": "Shivam Hospital",
+        "address": "Plot No. 57, CRW, CHS Near MIDC Water Tank, Kalyan Road, Dombivali (E) - 421 201",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8291903041 9821523466"
+    },
+    {
+        "sr_no": 90.0,
+        "hospital_name": "Surana Hospital & Research Centre",
+        "address": "Tank Road, End of Shankar lane, Next to Sky Walk Tower, Near Orlearm Church, Malad West, Mumbai-400064",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820056899"
+    },
+    {
+        "sr_no": 91.0,
+        "hospital_name": "Surana Sethia Hospital Research Centre",
+        "address": "Suman Nagar, Sion Trombay Road, Chembur, Mumbai- 400 071",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820056899"
+    },
+    {
+        "sr_no": 92.0,
+        "hospital_name": "Surekha Criticare Hospital",
+        "address": "Next to Indian Bank, Near Jawahar Hotel, Hospital Road, Ulhasnagar, Thane- 421 003",
+        "nabh_status": "NABH",
+        "contact_no": "9819414072"
+    },
+    {
+        "sr_no": 93.0,
+        "hospital_name": "Terna Multi Speciality Hospital and Research Centre",
+        "address": "Plot no -12, Sector-22, Opp. Nerul Railway Station, Phase II, Nerul (W) Navi Mumbai 400706",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7219809409 7219809408"
+    },
+    {
+        "sr_no": 94.0,
+        "hospital_name": "Shanti Nursing Home and Multispeciality Hospital",
+        "address": "1st Floor, Blue Flame Apt., Above Kondor Interiors, Opp. Jama Masjid, S.V. Road, Bandra(W), Mumbai- 400050",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9619488835 9773165049"
+    },
+    {
+        "sr_no": 95.0,
+        "hospital_name": "Suasth Healthcare (India) Limited",
+        "address": "Plot No. 1, Sector 20, Roadpali, Opposite Navi Mumbai Police Headquarters, Kalamboli, Navi Mumbai - 410218",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9004087382 022- 26421144"
+    },
+    {
+        "sr_no": 96.0,
+        "hospital_name": "HCG Cancer Centre",
+        "address": "Holy Cross Road, IC Colony Off Borivali Dahisar Link Rd, Borivali (W), 400092",
+        "nabh_status": "NABH",
+        "contact_no": "9958380079"
+    },
+    {
+        "sr_no": 97.0,
+        "hospital_name": "Criticare Lifeline Hospital",
+        "address": "Sector 19 Plot No. 85, Near White Flag Building, Kamothe, Navi Mumbai 410209",
+        "nabh_status": "NON NABH",
+        "contact_no": "8286195136 9819773009"
+    },
+    {
+        "sr_no": 98.0,
+        "hospital_name": "Asha Multispeciality Hospital",
+        "address": "Plot NO. 10, Sector - 16, Near D Mart, Roadpali, Kalamboli, Raigad, Navi Mumbai - 410218",
+        "nabh_status": "NON NABH",
+        "contact_no": "9967499941 7972132311 9082730976"
+    },
+    {
+        "sr_no": 99.0,
+        "hospital_name": "Shree Saibaba Heart Institute & Research Center",
+        "address": "Near Kalidas Kala Mandir, Shalimar, Nashik - 422002",
+        "nabh_status": "NON NABH",
+        "contact_no": "9819714425 9920176285"
+    },
+    {
+        "sr_no": 100.0,
+        "hospital_name": "Sai Criticare Hospital",
+        "address": "Block C-1 Room No - 2 Next to MSEB, Venus Chowk Ulhasnagar - 421004",
+        "nabh_status": "Non - NABH",
+        "contact_no": "9922957133 9665668224"
+    },
+    {
+        "sr_no": 101.0,
+        "hospital_name": "Galaxy multyspeciality hospital",
+        "address": "101, Anand Heights, SMD Road, Antop Hill, Mumbai- 400036",
+        "nabh_status": "Non NABH",
+        "contact_no": "9766260204"
+    },
+    {
+        "sr_no": 102.0,
+        "hospital_name": "Ashoka Medicover Hospitals, Nashik (A Unit of Sahrudaya Heathcare Pvt Ltd)",
+        "address": "Ashoka Medicover Hospitals, Indira Nagar, Wadala Road, Nashik, Maharashtra-422009",
+        "nabh_status": "NABH",
+        "contact_no": "8806593083"
+    },
+    {
+        "sr_no": 103.0,
+        "hospital_name": "Bhagwati Healthcare Pvt. Ltd.",
+        "address": "Plot No. 2, Rameshwadi, Kulgaon Badlapur Road, Badlapur - 421503",
+        "nabh_status": "Non NABH",
+        "contact_no": "9922624363"
+    },
+    {
+        "sr_no": 104.0,
+        "hospital_name": "Horizon prime",
+        "address": "Vibyor B- Wing, Patlipada,Ghodbunder Road, Thane(w)- 400607.",
+        "nabh_status": "NABH",
+        "contact_no": "9011079167"
+    },
+    {
+        "sr_no": 105.0,
+        "hospital_name": "Apex Wellness Hospital",
+        "address": "799 Behind Prakash Petrol Pump, Govind Nagar, Nashik - 422009",
+        "nabh_status": "NON NABH",
+        "contact_no": "8898576898 8855095235"
+    },
+    {
+        "sr_no": 106.0,
+        "hospital_name": "Maxilife Hospital Pvt Ltd",
+        "address": "Opp. Hanuman Mandir Kalyan Ambernath Road, Ulhasnagar - 3",
+        "nabh_status": "NON NABH",
+        "contact_no": "9823132624"
+    },
+    {
+        "sr_no": 107.0,
+        "hospital_name": "Sparsh Superspeciality Hospital",
+        "address": "Plot No. 141 Sai Arcade Mission Compound, Line Ali Panvel – 410206",
+        "nabh_status": "NON NABH",
+        "contact_no": "9028148525"
+    },
+    {
+        "sr_no": 108.0,
+        "hospital_name": "Cellcure Cancer Centre Private Limited (MOC)",
+        "address": "1. 1st floor, Khodyar Apartment, Daulat Nagar, Road No. 6, Close to Sudhir Phadke Flyover, Borivali East, Mumbai – 400066 (Nodal Centre) 2. 2nd Floor, Majithia Apartment, God’s Gift Premises, Co-op. Society Ltd. Above Irla Nursing Home, S.V. Road, Vile Parle (W)- 400056 3. 1st Floor, Blue Nile Building, Chari- Chandanwadi Signal, Junction of Almeida Road & LBS Rd. Thane (W) – 400601 4. 5th Floor, Silverpoint, Opp. Sukhshanti Hospital, LBS Marg, Ghatkopar (W) - 400086",
+        "nabh_status": "NON NABH",
+        "contact_no": "9833581002"
+    },
+    {
+        "sr_no": 109.0,
+        "hospital_name": "Oscar Multispecial Hospital",
+        "address": "Oscar Hospital and Research Centre, Pooja Enclave, 1st Floor 17- 22, D And E Wing, Kandivali West, Mumbai – 400067",
+        "nabh_status": "NON NABH",
+        "contact_no": "9004477595"
+    },
+    {
+        "sr_no": 110.0,
+        "hospital_name": "Dr. D Y Patil Hospital & Research Centre",
+        "address": "Sector -5, Nerul, Navi Mumbai - 400706",
+        "nabh_status": "NABH",
+        "contact_no": "8976314443 816960000"
+    },
+    {
+        "sr_no": 111.0,
+        "hospital_name": "SHAH LIFE LINE HOSPITAL",
+        "address": ".,Geeta Nagar, Phase – 7, Mira - Bhayandar Road, Near Fly Over Bridge, Miraroad (E), Thane-401107",
+        "nabh_status": "Non NABH",
+        "contact_no": "9819152757 9870288594"
+    },
+    {
+        "sr_no": 112.0,
+        "hospital_name": "Kaizen super speciality hospital",
+        "address": "nan",
+        "nabh_status": "Non NABH",
+        "contact_no": "8169246865, 9833803296"
+    },
+    {
+        "sr_no": 113.0,
+        "hospital_name": "City Criticare Hospital",
+        "address": "City Criticare Hospital, 1st Floor, Shubham Apartment, Kalyan- Murbad Road, Syndicate, Above Bata Showroom Kalyan West, Dist Thane-421301,",
+        "nabh_status": "Non- NABH",
+        "contact_no": "9819307449 , 7039400000"
+    },
+    {
+        "sr_no": 114.0,
+        "hospital_name": "Gandhi hospital",
+        "address": "142,MCCH Society, Old Panvel, Mumbai 410206",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9867812854"
+    },
+    {
+        "sr_no": 115.0,
+        "hospital_name": "Balajee hospital",
+        "address": "Shah Arcade 3 m Near Passport Office, Rani Sati Marg, Malad East, Mumbai- 400097",
+        "nabh_status": "Non- NABH",
+        "contact_no": "9821158473"
+    },
+    {
+        "sr_no": 116.0,
+        "hospital_name": "SEVENHILLS HEALTHCARE",
+        "address": "Marol maroshi Road, Andheri (East) Mumbai 400059",
+        "nabh_status": "NABH",
+        "contact_no": "9137527166 7977003990"
+    },
+    {
+        "sr_no": 117.0,
+        "hospital_name": "Medinova Super Speciality Hospital (Pvt) Ltd (Shatabdi)",
+        "address": "medinova shatabdi Hospital, Suyojit City Centre, Op Mahamarg Bus Sthanak, Mumbai Naka, Nashik 422002",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9051038138"
+    },
+    {
+        "sr_no": 118.0,
+        "hospital_name": "SRV MAMATA HOSPITAL",
+        "address": "P.43, Phase-II, MIDC, Next to ICICI Bank, Dombivli (East), Thane, Mumbai - 421203",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820492497"
+    },
+    {
+        "sr_no": 119.0,
+        "hospital_name": "SRVC HOSPITAL LLP",
+        "address": "Dr. Mandakani Parihar Marg, Opp Lokmanya Tilak Terminus, Tilak Nagar, Chembur,Mumbai - 400089",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8657017584"
+    },
+    {
+        "sr_no": 120.0,
+        "hospital_name": "VAIBHAV MULTISPECIALTY HOSPITAL",
+        "address": "Vaibhav Multispeciality Hospital,Groun +1st Floor,102/103,Mrunmay i Palace, Near Chatri Bungalow,Chikanghar, Kalyan West - 421301",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9930457487"
+    },
+    {
+        "sr_no": 121.0,
+        "hospital_name": "Wockhardt Hospital Mira Road",
+        "address": "Umrao Institute of Medical Sciences and Research,Near Railway Station, Mira Road East, Thane 401107",
+        "nabh_status": "NABH",
+        "contact_no": "9930007315"
+    },
+    {
+        "sr_no": 122.0,
+        "hospital_name": "Seven Palm Hospital",
+        "address": "Seven Palms Hospital, Next to Pendulkar, Marriage Hall, Mohan Palm Shirgaon, Badlapur, East.",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7666766692 7666927666"
+    },
+    {
+        "sr_no": 123.0,
+        "hospital_name": "HCG Manvavata Cancer Centre",
+        "address": "HCG Manavata Oncology LLP, Plot Number 64 & 68, Nashik Shivar New Mumbai Agra Highway, Mumbai Naka Nashik, Nashik 422002",
+        "nabh_status": "NABH",
+        "contact_no": "9860008267"
+    },
+    {
+        "sr_no": 124.0,
+        "hospital_name": "HCG ICS Khubchandani Cancer Centre",
+        "address": "31 Queens Barracks, Lady Ratan Tata Building, Maharshi Karve Road, Cooperage, Mumbai 400021",
+        "nabh_status": "NABH",
+        "contact_no": "9763036779"
+    },
+    {
+        "sr_no": 125.0,
+        "hospital_name": "K.J. Somaiya Hospital & Research Centre",
+        "address": "Near Everad Nagar, Sion East, Mumbai 400022",
+        "nabh_status": "Non NABH",
+        "contact_no": "9145500345 7770010919"
+    },
+    {
+        "sr_no": 126.0,
+        "hospital_name": "Asian Institute of Oncology Private Limited",
+        "address": "93/95, August Kranti Marg,Kemps Corner, Mumbai 400036",
+        "nabh_status": "NABH",
+        "contact_no": "9273030400"
+    },
+    {
+        "sr_no": 127.0,
+        "hospital_name": "Shelar Hospital And ICU",
+        "address": "Office No 1and 2, Tulsi Prerana CHS, Plot Number 09, Sector-1, Khanda Colony, Panvel - 410206",
+        "nabh_status": "Non NABH",
+        "contact_no": "9869071987"
+    },
+    {
+        "sr_no": 128.0,
+        "hospital_name": "Shree siddhivinayak Hospital & Heart Institute",
+        "address": "OPD KTHM College, Gangapur Road, Nashik 422002.",
+        "nabh_status": "Non NABH",
+        "contact_no": "9819390210"
+    },
+    {
+        "sr_no": 129.0,
+        "hospital_name": "Criticare ICCU Multispecialty & Trauma Centre",
+        "address": "Plot No.2A, Swami Samarth Complex, Sector 16, Airoli, Navi Mumbai 400708",
+        "nabh_status": "Non NABH",
+        "contact_no": "8108835362"
+    },
+    {
+        "sr_no": 130.0,
+        "hospital_name": "Sujata Birla Hospital",
+        "address": "Opp. Bytco College, Nashik-Pune Highway 422101",
+        "nabh_status": "nan",
+        "contact_no": "7798300067"
+    },
+    {
+        "sr_no": 131.0,
+        "hospital_name": "Sahyadri Hospital",
+        "address": "Mumbai-Agra Road, Near Dwarka Circle, Wadala Road, Nashik 422001",
+        "nabh_status": "NABH",
+        "contact_no": "8104606626"
+    },
+    {
+        "sr_no": 132.0,
+        "hospital_name": "Kharghar Multispeciality Hospital",
+        "address": "The Crown 1st Floor, Plot No. 15/16, Near D Mart, Sector 15, Kharghar, Navi Mumbai, 410210",
+        "nabh_status": "Non NABH",
+        "contact_no": "9175690835"
+    },
+    {
+        "sr_no": 133.0,
+        "hospital_name": "Mayuresh Hospital",
+        "address": "1st Floor, Mayuresh Trade Centre, Vashi Turbhe Road, Vashi, Navi Mumbai 400703",
+        "nabh_status": "nan",
+        "contact_no": "8411004349"
+    },
+    {
+        "sr_no": 134.0,
+        "hospital_name": "Shree Pragati Foundation's Hira Mongi Navneet Hospital Multi-Specialty Hospital",
+        "address": "Valji Ladha Road, Mulund (West) Mumbai 400080",
+        "nabh_status": "NABH",
+        "contact_no": "9920783881"
+    },
+    {
+        "sr_no": 135.0,
+        "hospital_name": "Nanavati Max Super speciality Hospital",
+        "address": "S.V. Road Vile Parle (W) Mumbai-400056",
+        "nabh_status": "NABH",
+        "contact_no": "9619684990"
+    },
+    {
+        "sr_no": 136.0,
+        "hospital_name": "Apex Hospitals Kandivali",
+        "address": "Multispeciality",
+        "nabh_status": "NABH",
+        "contact_no": "9321915090"
+    },
+    {
+        "sr_no": 137.0,
+        "hospital_name": "MGM HOSPITAL & RESEARCH CENTRE",
+        "address": "Sector -1,OPP CBD BUS DEPOT, CBD Belapur,400164",
+        "nabh_status": "NABH",
+        "contact_no": "9773629805"
+    },
+    {
+        "sr_no": 138.0,
+        "hospital_name": "Victor Hospital",
+        "address": "Old Station Rod, Malbhat, Margao, Salcete, Goa 403601",
+        "nabh_status": "Non Nabh",
+        "contact_no": "8422854001 8591951282"
+    },
+    {
+        "sr_no": 139.0,
+        "hospital_name": "Mira Superspecialty Hospital",
+        "address": "Mira Bldg, Opp D Mart, Near Salasar Business Park, 150 Feet Cross Road, Bhayandar West, Thane 401101",
+        "nabh_status": "Non Nabh",
+        "contact_no": "7607602108"
+    },
+    {
+        "sr_no": 140.0,
+        "hospital_name": "Lifeline Hospital Medical & Research Centre (Panvel)",
+        "address": "OPP S.T. Bus stand, National Highway 04, Panvel 410206",
+        "nabh_status": "Non Nabh",
+        "contact_no": "2261567000"
+    },
+    {
+        "sr_no": 141.0,
+        "hospital_name": "Exclusive Eye Centre",
+        "address": "nan",
+        "nabh_status": "nan",
+        "contact_no": "nan"
+    },
+    {
+        "sr_no": 142.0,
+        "hospital_name": "Aayush Eye Clinic Mircrosurgery & Laser Centre",
+        "address": "201-202, Coral Classic, Plot No. 955/956, 20th Road, Chembur, Mumbai-400071",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820301460 9324877043 9819461354"
+    },
+    {
+        "sr_no": 143.0,
+        "hospital_name": "Aditya Jyot Eye Hospital",
+        "address": "153-Major Parmeshwaran Road, Wadala (W), Mumbai- 400031",
+        "nabh_status": "NABH",
+        "contact_no": "9769763340 7045995893"
+    },
+    {
+        "sr_no": 144.0,
+        "hospital_name": "Anideep Eye Hospital & Institute Pvt.Ltd",
+        "address": "Plot No.414, Next to Golden Tabacco Compound, S.V.Road, Vile Parle (W), Mumbai- 400056",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9833028788 9167661177"
+    },
+    {
+        "sr_no": 145.0,
+        "hospital_name": "Anil Eye Hospital",
+        "address": "The Signature,Ganesh Mandir Road,Opp.Dedhia Bhavan, Dombivli (E) 421201. Maharashtra, India.",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8169782382 9326069528"
+    },
+    {
+        "sr_no": 146.0,
+        "hospital_name": "Contacare Eye Care Hospital",
+        "address": "Mahavir Ratan Bldg, Plot No.113, Sector-12, Vashi, Navi Mumbai - 400709",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9324942427 8108894146"
+    },
+    {
+        "sr_no": 147.0,
+        "hospital_name": "Doctor Eye Institute Pvt.Ltd",
+        "address": "Spenta Mansion, S.V.Road, Andheri (W), Mumbai-400058",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9987044284 9870675831"
+    },
+    {
+        "sr_no": 148.0,
+        "hospital_name": "Dr. Gadgil Eye Hospital",
+        "address": "Ground Floor, Shreyas Apartments, Behind Krishna Sweets Lane, Ramachandra Nagar, No 01, Thane (W) 400604",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9819321818 9820017486"
+    },
+    {
+        "sr_no": 149.0,
+        "hospital_name": "Dr. Patani Eye Clinic",
+        "address": "210, R.R Realty tank Road, LBS Marg Junction, Bhandup (W), Mumbai-400078",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9619192022"
+    },
+    {
+        "sr_no": 150.0,
+        "hospital_name": "Global Eye Clinic",
+        "address": "305-306 Shop Zone Apt. Above Colors Showroom, Near BOI, M.G. Road Ghatkopar (W)- 400086",
+        "nabh_status": "NABH",
+        "contact_no": "8291576363"
+    },
+    {
+        "sr_no": 151.0,
+        "hospital_name": "Kenia Eye Hospital",
+        "address": "1st floor, Rizvi Nagar, Next to Milan, Milan Subway, S.V.Road, Santacruz, Mumbai- 400054",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7506499962 / 9870064240"
+    },
+    {
+        "sr_no": 152.0,
+        "hospital_name": "Maa Nursing Home and Netrajyoti Eyecare Centre",
+        "address": "Himachal Building, S.V.Road, Opp Sundar Nagar, Malad West, Mumbai-400064",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820072543 7977134984"
+    },
+    {
+        "sr_no": 153.0,
+        "hospital_name": "Mahatme Health And Happiness Hospital",
+        "address": "Saukhya, Jairamishana Co-op, Hsg Society, Deshmukh Wadi, Mithagar Road,  Mulund (E), Mumbai- 400081",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7410035098"
+    },
+    {
+        "sr_no": 154.0,
+        "hospital_name": "Mumbai Eye Care",
+        "address": "101/102, Sai Vaibhav CHS, Near Vikrant Circle, Ghatkopar East- 400077",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9130057336 8451045934"
+    },
+    {
+        "sr_no": 155.0,
+        "hospital_name": "Ojas Eye Hospital",
+        "address": "Roseland Building, 180 Waterfield Road, Opp.National College, Bandra (W), Mumbai- 400050",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820678570 9821572626 8422842201"
+    },
+    {
+        "sr_no": 156.0,
+        "hospital_name": "Parekh Eye Hospital",
+        "address": "1st floor, Diamond Palace, Opp Bandra Police Station, Hill Road, Bandra (W) Mumbai-400050",
+        "nabh_status": "NABH",
+        "contact_no": "9619005890 9920798217"
+    },
+    {
+        "sr_no": 157.0,
+        "hospital_name": "Raghukamal Hospital Eye Care",
+        "address": "Anthshil, 66, Marve Road, Orlem, Above Dena Bank, Malad (W) - 400064",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9819339433 9870304433"
+    },
+    {
+        "sr_no": 158.0,
+        "hospital_name": "Rushabh Eye Hospital & Laser Centre Pvt.Ltd",
+        "address": "18th Road, Near Ambedkar Garden Chembur,Mumbai- 400071",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7042423724"
+    },
+    {
+        "sr_no": 159.0,
+        "hospital_name": "Sahu Eye Hospital",
+        "address": "1st Floor, Almar Arcade, Above Punjab National Bank, Orlem, Malad (W), Mumbai-400064",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9768716078"
+    },
+    {
+        "sr_no": 160.0,
+        "hospital_name": "Samarth Nethralaya",
+        "address": "Siddivinayak Residency, Office 15 & 16, Plot No.18, Sector 20, Above Domino's Pizza, Near Shil Chowk, Kharghar, Navi Mumbai- 410210",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8655596885"
+    },
+    {
+        "sr_no": 161.0,
+        "hospital_name": "Sanjeevani Eye Hospital And Laser vision Centre",
+        "address": "2nd Floor, Alsinghani Chamber, Near Darbi Hotel, Sector-17, Ambernath Road, Ulhasnagar-421003",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8983210203 9084098633"
+    },
+    {
+        "sr_no": 162.0,
+        "hospital_name": "Shree Ramkrishna Netralaya",
+        "address": "Dosti Imperia Shopee, 1st floor unit no. 1-4, Manpada, Ghodbunder Rd, Thane (W) 400607",
+        "nabh_status": "NABH",
+        "contact_no": "8686340088 8879453727"
+    },
+    {
+        "sr_no": 163.0,
+        "hospital_name": "Sulochan Eye Hospital",
+        "address": "7/6, Ground Floor, R.R.Reality Complex, Off L.B.S Marg, Opp Dreams Mall, Bhandup (W), Mumbai-400078",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820339222"
+    },
+    {
+        "sr_no": 164.0,
+        "hospital_name": "SUNSHINE EYE CARE UNIT OF SUNSHINE HEALTHCARE",
+        "address": "F4/B, Vashi Road, Above Warna Dairy, Sector-9, Vashi, Navi Mumbai-400703",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9699258591 9082894479"
+    },
+    {
+        "sr_no": 165.0,
+        "hospital_name": "Surya Eye Institute and Research Centre Pvt Ltd",
+        "address": "9, Aroto House, Saidham, P.K.Road, Mulund (W), Mumbai- 400080",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9833737773"
+    },
+    {
+        "sr_no": 166.0,
+        "hospital_name": "Swaraashi Netralaya",
+        "address": "Plot No-16, Near Blue Diamond Hotel, Opp.Saraswat Bank, Sector-28, Vashi, Navi Mumbai-400705",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9967694640 7045180681"
+    },
+    {
+        "sr_no": 167.0,
+        "hospital_name": "The Vission Eye Centre",
+        "address": "101, Hiralaya, N.S, Road No-10, Near Laxmikant Chowk, JVPD Scheme, Mumbai- 400049",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9867656060"
+    },
+    {
+        "sr_no": 168.0,
+        "hospital_name": "Vin-R Eye Care Hospital",
+        "address": "B-001 Sai Shardha, Behind Reliance Fresh and Bus Depot, Vikroli, Mumbai-400083",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9773193782 9819395333 9967786546"
+    },
+    {
+        "sr_no": 169.0,
+        "hospital_name": "Wavikar Eye Institute",
+        "address": "Level 4&5, Amber Arcade, Bhiwandi Bypass Road, Near Lodha paradise, Majiwade, Thane(W)- 400601",
+        "nabh_status": "NABH",
+        "contact_no": "7738097712 8898646993 8657179183"
+    },
+    {
+        "sr_no": 170.0,
+        "hospital_name": "Asian Eye Institute and Laser Centre Pvt Ltd.",
+        "address": "101, Satyanarayan Apartment, Opp.G.H.High school, Off. M.G Cross Road, Borivali (E)Mumbai- 400066",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9867303918 8657460592"
+    },
+    {
+        "sr_no": 171.0,
+        "hospital_name": "Prism Eye Institute and Research Centre",
+        "address": "Plot No.63, Sec-1S, Behind CIDCO Office, New Panvel - 410206",
+        "nabh_status": "Non-NABH",
+        "contact_no": "022-27466610 9920617778 8286868279"
+    },
+    {
+        "sr_no": 172.0,
+        "hospital_name": "Prism Eye Institute and Research Centre",
+        "address": "Radha Krishna Sankul, Opp.Holly Cross Hospital, Karnik Road, Kalayan (W)-421301",
+        "nabh_status": "NABH",
+        "contact_no": "8655355344 8655355345"
+    },
+    {
+        "sr_no": 173.0,
+        "hospital_name": "Isha Eye Care Pvt Ltd",
+        "address": "112-114, First Floor, Dev Corpora, Near Cadbury Junction, Thane (West)",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8369007951"
+    },
+    {
+        "sr_no": 174.0,
+        "hospital_name": "Ruby Eye Care Hospital",
+        "address": "1st Floor, Laxmi Shopping Centre, Ghatkopar (W), Mumbai- 400086",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9664578801"
+    },
+    {
+        "sr_no": 175.0,
+        "hospital_name": "Laxmi Eye Clinic",
+        "address": "Plot No. 31, Sector - 4, Anant Co-op HSG Society, 1st Floor, above Axis Bank Kharghar, Navi Mumbai - 410210",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7722001240"
+    },
+    {
+        "sr_no": 176.0,
+        "hospital_name": "Radhakrishna Netralay And Superspeciality Eye Hospital",
+        "address": "Nana Pawshe Chowk, Station Road, Near Ganeshwadi Post Office, Kolsewadi, Kalyan (E) 421306",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9892593959"
+    },
+    {
+        "sr_no": 177.0,
+        "hospital_name": "Isha Eye Care Pvt Ltd",
+        "address": "Aasra Apartment, Plot No.33, Near Station Road, Ambernath (E)",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8424054416"
+    },
+    {
+        "sr_no": 178.0,
+        "hospital_name": "Sai Deep Eye Clinic",
+        "address": "Golden Flower Kalina Village Road, Opp. Sony Centre, Kalina, Santacruz (E) - 29",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9819571747 7738475086"
+    },
+    {
+        "sr_no": 179.0,
+        "hospital_name": "Envision Eye Hospital",
+        "address": "5th Floor, Sharma Estate, Next to Mina Hotel, S. V. Road, Jogeshwari West, Mumbai-400102",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7208364275"
+    },
+    {
+        "sr_no": 180.0,
+        "hospital_name": "Eye Max Super Speciality Eye Centre",
+        "address": "104, Neelkanth Plaza, Opp. D Mart, Sector-40, Seawoods (W) - 400706",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9137913652"
+    },
+    {
+        "sr_no": 181.0,
+        "hospital_name": "Saarth Netralay",
+        "address": "104, Millenium Empire, Sector - 15, D Mart Road, Kharghar - 410210",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9284391856"
+    },
+    {
+        "sr_no": 182.0,
+        "hospital_name": "Insight Eye Care and Laser Centre",
+        "address": "1st Floor Utkarsh CHS Ram Mandir Road, Vazira Naka Borivali (W) Mumbai - 400092",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9820550730"
+    },
+    {
+        "sr_no": 183.0,
+        "hospital_name": "Healing Touch Eye Hospital",
+        "address": "Shop No. 5/6, Satyam Heights, Plot No.-81, Sector- 19, Kamothe, Navi Mumbai – 410209",
+        "nabh_status": "Non-NABH",
+        "contact_no": "7039602547"
+    },
+    {
+        "sr_no": 184.0,
+        "hospital_name": "Ramole Eye Hospital & Dental Clinic",
+        "address": "Opp. Sant Andraya Church, Sharanpur - Trimbak Link Road, Canada Corner, Nashik - 422005",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9860869159 9028915558"
+    },
+    {
+        "sr_no": 185.0,
+        "hospital_name": "Drashti Eye Hospital",
+        "address": "Keystone Elita Shop No. 4-5, Sector-15, D Mart Road, Kharghar Navi Mumbai - 410210",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8286858482"
+    },
+    {
+        "sr_no": 186.0,
+        "hospital_name": "Dr. Bapaye Hospital",
+        "address": "Behind N.D.C.C Bank, Old Agra Road, Nashik- 422001",
+        "nabh_status": "Non NABH",
+        "contact_no": "8888416565"
+    },
+    {
+        "sr_no": 187.0,
+        "hospital_name": "Dr. Simandhar Eye Care Centre",
+        "address": "A/203, Heritage Holy, J. N. Road, Nest Apna Bazar, Mulund (W) Mumbai -400080",
+        "nabh_status": "Non-NABH",
+        "contact_no": "9223578353"
+    },
+    {
+        "sr_no": 188.0,
+        "hospital_name": "Advanced Eye Hospital (A Unit of Dr. Agarwals Healthcare Pvt Ltd)",
+        "address": "30, The affaires, Palm Beach Road, Sec-17, Sanpada, Navi Mumbai - 400705",
+        "nabh_status": "Non-NABH",
+        "contact_no": "8591283480"
+    },
+    {
+        "sr_no": 189.0,
+        "hospital_name": "Bhalanetra Superspeciality Eye Hospital",
+        "address": "Commercial unit 5-8, Sachdeva Complex Jangal Mangal Road, Bhandup West, Mumbai 400078",
+        "nabh_status": "Non -NABH",
+        "contact_no": "7208402425 9994137286"
+    },
+    {
+        "sr_no": 190.0,
+        "hospital_name": "Dr Aphale Eye Hospital",
+        "address": "2nd floor teejadeep mall building, Meenatai thakare Chauk, Castle Mill Naka, Near Vikas Complex, LBS Road Thane west",
+        "nabh_status": "NABH",
+        "contact_no": "9833699823 9769105410"
+    },
+    {
+        "sr_no": 191.0,
+        "hospital_name": "Isha Eye Care Pvt Ltd",
+        "address": "Radha Krishna Sankul, Opp.Holly Cross Hospital, Karnik Road, Kalayan (W)- 421301",
+        "nabh_status": "Non NABH",
+        "contact_no": "9822446210"
+    },
+    {
+        "sr_no": 192.0,
+        "hospital_name": "ASG Hospital, Goa",
+        "address": "house no. 15/153/a2, audi showroom, 1st and 2nd floor, Dr. Jack de sequeria road, caranzalem panjim ,goa , -403002",
+        "nabh_status": "Non NABH",
+        "contact_no": "9158919504"
+    },
+    {
+        "sr_no": 193.0,
+        "hospital_name": "ASG Hospital, nashik",
+        "address": "shop no.12, Bosco Centre Mall, Near Prasad Circle, Gangapur Road, Nashik- 422005",
+        "nabh_status": "Non NABH",
+        "contact_no": "9158919504"
+    },
+    {
+        "sr_no": 194.0,
+        "hospital_name": "Dr.Vadiya Eye Hospital",
+        "address": "A-15, Sitladevi Society, Doctors Corner, D.N. Nagar, Metro Station, Andheri Link Road, Andheri (West), Mumbai 400058",
+        "nabh_status": "Non NABH",
+        "contact_no": "9004496621"
+    },
+    {
+        "sr_no": 195.0,
+        "hospital_name": "Sai Drishti Eye Hospital",
+        "address": "Sai Drishti Hospital, II, Natraj CHS, Plot Number 15, Sector 04, Sanpada, Navi Mumbai 400705",
+        "nabh_status": "Non NABH",
+        "contact_no": "8898582512"
+    },
+    {
+        "sr_no": 196.0,
+        "hospital_name": "Centre for Sight",
+        "address": "Plot -14, Sector-25, Nerul, Navi Mumbai - 400706",
+        "nabh_status": "NABH",
+        "contact_no": "8800904638"
+    },
+    {
+        "sr_no": 197.0,
+        "hospital_name": "Urmi Eye Clinic",
+        "address": "Plot No 70, Vivekananad C.H.S, Behind Aadarsh High School, Badlapur, East",
+        "nabh_status": "Non NABH",
+        "contact_no": "7720050812"
+    },
+    {
+        "sr_no": 198.0,
+        "hospital_name": "Swaraashi Netralaya (Thane)",
+        "address": "1st floor, Priyadarshini soc, A.K. Joshi (Bedekar) School, Mahatma Phule Marg Naupada, Thane (west) Mumbai- 400602",
+        "nabh_status": "Non NABH",
+        "contact_no": "9892657656"
+    },
+    {
+        "sr_no": 199.0,
+        "hospital_name": "Swaraashi Netralaya (Mulund)",
+        "address": "605, 6th floor, Neptune Uptown Bldg, Opp Post Office N.S. Road, Mulund (west)Mumbai- 400602",
+        "nabh_status": "Non NABH",
+        "contact_no": "9892657656"
+    },
+    {
+        "sr_no": 200.0,
+        "hospital_name": "Birla Eye Hospital",
+        "address": "180-B, Opp Zila Parishad, Trimbark Road, Nashik, Maharashtra 422001.",
+        "nabh_status": "NABH",
+        "contact_no": "9225608150"
+    },
+    {
+        "sr_no": 201.0,
+        "hospital_name": "Drishti Eye Hospital",
+        "address": "New Ashwini Co-op, Housing Society, Besides BDL Tower, Station Road, Kulgaon, Badlapur (E) 421503, Mumbai 400058",
+        "nabh_status": "Non NABH",
+        "contact_no": "7722082865"
+    },
+    {
+        "sr_no": 202.0,
+        "hospital_name": "ASG Eye Hospital (Dombivli East)",
+        "address": "2nd Floor, Jaikul Arcade, Manpada Road, Opposite Indian Bank, Near Gaondevi Temple, Dombivali East-421201",
+        "nabh_status": "NABH",
+        "contact_no": "9167647413"
+    },
+    {
+        "sr_no": 203.0,
+        "hospital_name": "ASG Eye Hospital (Vashi)",
+        "address": "Office No. 601/602/603/604 6th floor, Goodwill Excellency, Sector 17, Vashi, Navi Mumbai, Maharashtra 400703",
+        "nabh_status": "NABH",
+        "contact_no": "9158919504"
+    },
+    {
+        "sr_no": 204.0,
+        "hospital_name": "Nair Eye Hospital",
+        "address": "Plot Number 14, Rd No.16, Opp Cineraj Miraj Cinema, Sec -11, New Panvel, (East)",
+        "nabh_status": "Non NABH",
+        "contact_no": "9324622702"
+    },
+    {
+        "sr_no": 205.0,
+        "hospital_name": "Iksha Eye Care",
+        "address": "102, 1st floor, suryoday Building, Juhutara Road, Navyug Colony, Santacurz (W), Mumbai 400054",
+        "nabh_status": "Non NABH",
+        "contact_no": "7208364275"
+    },
+    {
+        "sr_no": 206.0,
+        "hospital_name": "Sarvodaya Eye Care",
+        "address": "301, Maitreya Business Park, Hanuman Road, Ville Parle (East) Mumbai 400057",
+        "nabh_status": "Non NABH",
+        "contact_no": "9869477783"
+    },
+    {
+        "sr_no": 207.0,
+        "hospital_name": "Exclusive Dental Clinic",
+        "address": "nan",
+        "nabh_status": "nan",
+        "contact_no": "nan"
+    },
+    {
+        "sr_no": 208.0,
+        "hospital_name": "Dr Muley's Multi Speciality Dental Clinic",
+        "address": "Plot No.22, Shailaja, Bhise Hospital Bldg, 1st Floor, Survodaya Society, Near Saraswat Bank, Station Road, Ambernath (E) 421501",
+        "nabh_status": "Non NABH",
+        "contact_no": "9921190617 9604670132"
+    },
+    {
+        "sr_no": 209.0,
+        "hospital_name": "Jivak Dental Clinic",
+        "address": "Shop No.11, Sai Sidhi Apt., Opp Shreerath Hotel, Ambernath (East) 421501",
+        "nabh_status": "Non NABH",
+        "contact_no": "8655202860"
+    },
+    {
+        "sr_no": 210.0,
+        "hospital_name": "Kenia Dental Hospital",
+        "address": "1st Floor, Rizvi Nagar, Next to Milan, Milan Subway, S.V.Road, Santacruz, Mumbai-400054",
+        "nabh_status": "Non NABH",
+        "contact_no": "9870064240"
+    },
+    {
+        "sr_no": 211.0,
+        "hospital_name": "Priya Dental Clinic",
+        "address": "Shop No 2, 52 Veer apartments, 7th RD Rajawadi, Ghatkopar(E), Mumbai- 400077",
+        "nabh_status": "Non NABH",
+        "contact_no": "9820010769 9820900495"
+    },
+    {
+        "sr_no": 212.0,
+        "hospital_name": "The Elements of Facial Aesthetics",
+        "address": "103 A/B, 1st Floor, Devavrata Premises, Plot No-83, Sector-17, Vashi Navi Mumbai-400703",
+        "nabh_status": "Non NABH",
+        "contact_no": "9137766113"
+    },
+    {
+        "sr_no": 213.0,
+        "hospital_name": "Smile Craft Dento Facial Rehab Centre",
+        "address": "D2-104, Sarova Complex, Rehab Building - 1, Thakur Village, Kandivali (E), Mumbai 400101",
+        "nabh_status": "Non NABH",
+        "contact_no": "9004949313"
+    },
+    {
+        "sr_no": 214.0,
+        "hospital_name": "Micro Care Dental Unit",
+        "address": "C.G.S. Colony, S. M. Plot, Antop Hill, Wadala (E), Mumbai - 400037",
+        "nabh_status": "Non NABH",
+        "contact_no": "8709019992"
+    },
+    {
+        "sr_no": 215.0,
+        "hospital_name": "Big Smile Dental Clinic",
+        "address": "Shop No. 1, Executive Residency, Near Big Bazar, Nashik Pune Highway, Nashik Road, Nashik -422101",
+        "nabh_status": "Non NABH",
+        "contact_no": "02534052910 9970156112"
+    },
+    {
+        "sr_no": 216.0,
+        "hospital_name": "Ramole Eye Hospital & Dental Clinic",
+        "address": "Opp. Sant Andraya Church, Sharanpur - Trimbak Link Road, Canada Corner, Nashik - 422005",
+        "nabh_status": "Non NABH",
+        "contact_no": "9860869159 9028915558"
+    },
+    {
+        "sr_no": 217.0,
+        "hospital_name": "Denton dental care clinic",
+        "address": "Hari Vishwa Apartment, Opp. St. Philomena High School, Jail Road, Nashik Road, Nashik - 422101",
+        "nabh_status": "Non NABH",
+        "contact_no": "9923401640"
+    },
+    {
+        "sr_no": 218.0,
+        "hospital_name": "pulse dental clinic",
+        "address": "shop 11/12, Patel heights, plot no. 14/15/16/, sector -7, Ghansoli, navi mumbai- 4000701",
+        "nabh_status": "Non NABH",
+        "contact_no": "9324677909"
+    },
+    {
+        "sr_no": 219.0,
+        "hospital_name": "Dr Mahale Dental Clinic",
+        "address": "Office No. 105, Shree Nath Enclave, Near LIC Office, kute marg, near sandeep hotel, Mumbai Naka, Nashik - 422101",
+        "nabh_status": "Non NABH",
+        "contact_no": "7741901070 8329469257"
+    },
+    {
+        "sr_no": 220.0,
+        "hospital_name": "Lotus Dental Clinic",
+        "address": "Shop No 02, Co.Op Hsg.Soc. Flower Valley Near Anant Halwai, Khadalpada Circle, Kalyan West, 421301",
+        "nabh_status": "Non NABH",
+        "contact_no": "7304614767"
+    },
+    {
+        "sr_no": 221.0,
+        "hospital_name": "Dr A.P.J/ Abdul Kalam Research Centre and Super specialty Dental Clinic",
+        "address": "3rd Floor, Unit No 3A Zone 1, DGP House 88 Cold, Prabhadevi Road, Prabhadevi, Mumbai 400025",
+        "nabh_status": "Non NABH",
+        "contact_no": "8591657911"
+    },
+    {
+        "sr_no": 222.0,
+        "hospital_name": "The Smile Savers Dental Clinic",
+        "address": "205, Vishwa, R.B. Mehta Road, Ghatkopar East, Mumbai 400077",
+        "nabh_status": "Non NABH",
+        "contact_no": "9324012111"
+    },
+    {
+        "sr_no": 223.0,
+        "hospital_name": "Exclusive Diagnostic Centre",
+        "address": "nan",
+        "nabh_status": "nan",
+        "contact_no": "nan"
+    },
+    {
+        "sr_no": 224.0,
+        "hospital_name": "Jeeyo Imaging centre",
+        "address": "Sarvodaya Hospital Premises, LBS Marg, Near Ghatkopar Metro Station, Ghatkoper (W), Mumbai- 400086",
+        "nabh_status": "Non Nabl",
+        "contact_no": "9892143809 9768113366"
+    },
+    {
+        "sr_no": 225.0,
+        "hospital_name": "Metropolis Health Care Ltd.",
+        "address": "250-D, Udhyog Bhawan, Hind Cycle Marg, Behind Glaxo, Worli, Mumbai- 400030",
+        "nabh_status": "NABL",
+        "contact_no": "9004491331"
+    },
+    {
+        "sr_no": 226.0,
+        "hospital_name": "Hindlabs Diagnostic Centre, HLL",
+        "address": "Hindlab, 1st Floor, CGHS Wellness Centre Worli, Dr.R.G Thadani Road, Worli, Mumbai- 400030",
+        "nabh_status": "NABL",
+        "contact_no": "9167697774 9664584784"
+    },
+    {
+        "sr_no": 227.0,
+        "hospital_name": "Meesha Healthcare & Research Pvt. Ltd",
+        "address": "Shop No. 3, 1st Floor, La View, Building, B. J. Marg, Jacob Circle, Mahalaxmi, Mumbai - 400011",
+        "nabh_status": "Non Nabl",
+        "contact_no": "7710084303"
+    },
+    {
+        "sr_no": 228.0,
+        "hospital_name": "Micro Care Diagnosic & Health Centre Hospital",
+        "address": "C.G.S Colony, Sector 7, Convenient Shopping Centre, Opp. Bldg. No. 87 & CPWD Office, Antop Hill, Wadala (E) Mumbai-400037",
+        "nabh_status": "Non Nabl",
+        "contact_no": "8652029277"
+    },
+    {
+        "sr_no": 229.0,
+        "hospital_name": "Swasthyalife Diagnostics Health Services",
+        "address": "Survey No. 624 behind Ved Mandir Trimbak Road, Nashik 422001",
+        "nabh_status": "Non Nabl",
+        "contact_no": "9527968300"
+    },
+    {
+        "sr_no": 230.0,
+        "hospital_name": "Alpine Diagnostic Centre",
+        "address": "Plot No. A 232 Road No. 21 Y-Lane, Behind Cyber Tech Solution, Nehru Nagar, Wagle Industrial Estate, Thane West-400604",
+        "nabh_status": "NABL",
+        "contact_no": "8108120623"
+    },
+    {
+        "sr_no": 231.0,
+        "hospital_name": "Millennium Special Lab Pvt Ltd",
+        "address": "Ground Floor, Shree Satyam Co. Op. Premises, Next to PNB, M.G. Road, Naupada, Thane (W) 400602",
+        "nabh_status": "NABL",
+        "contact_no": "8591735073 8591735071"
+    },
+    {
+        "sr_no": 232.0,
+        "hospital_name": "THYROCARE TECHNOLOGIES LTD",
+        "address": "37/1, TTC INDUSTRIAL ESTATE MIDC, TURBHE, NAVI MUMBAI 400703",
+        "nabh_status": "NABL",
+        "contact_no": "9833222552 9960468994"
+    },
+    {
+        "sr_no": 233.0,
+        "hospital_name": "DR. AMRISH MEHTA",
+        "address": "2nd Floor, Jayant Arcade, M.G. Road, Ghatkopar, East, Mumbai - 400077",
+        "nabh_status": "Non Nabl",
+        "contact_no": "9819151819"
+    },
+    {
+        "sr_no": 234.0,
+        "hospital_name": "PLUS CARE",
+        "address": "1st Floor, Plot-135- 160, Firuzara Building, Maharshi Karve Marge, Nariman Point, Mumbai.",
+        "nabh_status": "Non Nabl",
+        "contact_no": "7208489266"
+    }
+]

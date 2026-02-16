@@ -1,0 +1,67 @@
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.db
+*.sqlite
+*.sqlite3
+
+# Backend temp files (bill uploads)
+temp_upload_*
+
+# Credentials / service config (e.g. Google Vision)
+hospitalbills_vision.json
+
+# Node / Frontend (Next.js)
+node_modules/
+.next/
+out/
+build/
+.npm
+.yarn/
+.pnpm-store/
+*.tsbuildinfo
+next-env.d.ts
+
+# Logs & debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing & coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE (optional: remove .vscode if you share workspace settings)
+.idea/
+*.swp
+*.swo
+
+# Misc
+*.bak
+.cache/
