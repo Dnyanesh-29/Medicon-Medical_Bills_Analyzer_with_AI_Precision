@@ -49,6 +49,7 @@ class BillData(BaseModel):
     total_amount: float
     advance_paid: Optional[float] = 0.0
     balance_amount: Optional[float] = None
+    pre_auth_amount: Optional[float] = None
 
 class ViolationType(str, Enum):
     PACKAGE_RATE_VIOLATION = "package_rate_violation"
@@ -106,6 +107,10 @@ class BillAnalysisResult(BaseModel):
     price_comparisons: List[PriceComparison] = Field(default_factory=list)
     overall_risk: Severity
     summary: str
+    # Canonical rupee amount by which bill exceeds CGHS / reference
+    # For CGHS hospitals: legally enforceable overcharge
+    # For non-CGHS hospitals: informational above-reference amount (may be 0.0)
+    total_overcharge: float = 0.0
     total_violations: int = 0
     high_severity_count: int = 0
     medium_severity_count: int = 0

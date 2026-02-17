@@ -1,0 +1,101 @@
+Found 13 USG items:
+==================
+{
+  "sr_no": 710.0,
+  "procedure": "USG Colour Doppler Pregnency/ Fetal Doppler/ Umbical Doppler/ Uterine\nVessel Doppler",
+  "non_nabh_rate": 1425.0,
+  "nabh_rate": 1675.0
+}
+{
+  "sr_no": null,
+  "procedure": "USG, X-RAY , CT, MRI, BONE DENSITOMETRY",
+  "non_nabh_rate": null,
+  "nabh_rate": null
+}
+{
+  "sr_no": 1590.0,
+  "procedure": "USG for Obstetrics - Anomalies scan",
+  "non_nabh_rate": 1700.0,
+  "nabh_rate": 2000.0
+}
+{
+  "sr_no": 1591.0,
+  "procedure": "USG Whole Abdomen / KUB - Including Post void residual (PVR)",
+  "non_nabh_rate": 680.0,
+  "nabh_rate": 800.0
+}
+{
+  "sr_no": 1592.0,
+  "procedure": "Pelvic USG (gynae, infertility , prostate, With post void residual PVR etc.)",
+  "non_nabh_rate": 425.0,
+  "nabh_rate": 500.0
+}
+{
+  "sr_no": 1593.0,
+  "procedure": "Small parts USG ( scrotum, thyroid , parathyroid etc)",
+  "non_nabh_rate": 349.0,
+  "nabh_rate": 410.0
+}
+{
+  "sr_no": 1596.0,
+  "procedure": "Contrast enhanced USG",
+  "non_nabh_rate": 900.0,
+  "nabh_rate": 1035.0
+}
+{
+  "sr_no": 1597.0,
+  "procedure": "USG Breast- Bilateral /Unilateral",
+  "non_nabh_rate": 680.0,
+  "nabh_rate": 800.0
+}
+{
+  "sr_no": 1598.0,
+  "procedure": "USG Hysterosalpingography (HSG)",
+  "non_nabh_rate": 2040.0,
+  "nabh_rate": 2400.0
+}
+{
+  "sr_no": 1603.0,
+  "procedure": "USG guided intervention- FNAC",
+  "non_nabh_rate": 1530.0,
+  "nabh_rate": 1800.0
+}
+{
+  "sr_no": 1604.0,
+  "procedure": "USG guided intervention - biopsy",
+  "non_nabh_rate": 720.0,
+  "nabh_rate": 828.0
+}
+{
+  "sr_no": 1605.0,
+  "procedure": "USG guided intervention - nephrostomy",
+  "non_nabh_rate": 800.0,
+  "nabh_rate": 920.0
+}
+{
+  "sr_no": 1778.0,
+  "procedure": "USG guided FNAC thyroid gland",
+  "non_nabh_rate": 387.0,
+  "nabh_rate": 455.0
+}
+
+Found 3 items with 'Abdomen' and 'Pelvis':
+==================
+{
+  "sr_no": 1614.0,
+  "procedure": "Abdomen & Pelvis for KUB",
+  "non_nabh_rate": 128.0,
+  "nabh_rate": 147.0
+}
+{
+  "sr_no": 1640.0,
+  "procedure": "CT Scan Lower Abdomen (incl. Pelvis) With Contrast",
+  "non_nabh_rate": 1700.0,
+  "nabh_rate": 1955.0
+}
+{
+  "sr_no": 1641.0,
+  "procedure": "CT Scan Lower Abdomen (Incl. Pelvis) Without Contrast",
+  "non_nabh_rate": 1500.0,
+  "nabh_rate": 1725.0
+}

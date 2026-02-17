@@ -138,7 +138,8 @@ Extract and structure this information into JSON format:
 8. Total amount (numeric only, no currency symbols)
 9. Advance paid (numeric)
 10. Balance amount (numeric)
-11. ALL itemized charges with:
+11. Pre-auth / Insurance Approval Amount (numeric, look for 'Authorization', 'Approved', 'Pre-auth')
+12. ALL itemized charges with:
     - description (clean, readable)
     - quantity (numeric)
     - unit_price (numeric if available)
@@ -166,6 +167,7 @@ Return this EXACT JSON structure:
   "total_amount": 0.0,
   "advance_paid": 0.0,
   "balance_amount": 0.0,
+  "pre_auth_amount": 0.0,
   "items": [
     {{
       "description": "...",
@@ -209,6 +211,7 @@ Return this EXACT JSON structure:
                 total_amount=float(extracted_data.get('total_amount', 0)),
                 advance_paid=float(extracted_data.get('advance_paid', 0)) if extracted_data.get('advance_paid') else 0.0,
                 balance_amount=float(extracted_data.get('balance_amount', 0)) if extracted_data.get('balance_amount') else None,
+                pre_auth_amount=float(extracted_data.get('pre_auth_amount', 0)) if extracted_data.get('pre_auth_amount') else None,
                 items=[
                     BillItem(
                         description=item.get('description', ''),

@@ -56,7 +56,21 @@ class BillAnalyzer:
                 is_enforceable=True
             ))
         
-        # 3. Generate price comparisons
+        # 3. Pre-auth Balance Billing Check
+        if bill_data.pre_auth_amount and bill_data.total_amount > bill_data.pre_auth_amount:
+            diff = bill_data.total_amount - bill_data.pre_auth_amount
+            violations.append(Violation(
+                type=ViolationType.BALANCE_BILLING,
+                severity=Severity.HIGH,
+                description=f"Initial pre-authorization was ₹{bill_data.pre_auth_amount:,.0f}, but bill is ₹{bill_data.total_amount:,.0f} (₹{diff:,.0f} extra).",
+                charged_amount=bill_data.total_amount,
+                expected_amount=bill_data.pre_auth_amount,
+                deviation_percentage=(diff / bill_data.pre_auth_amount) * 100,
+                legal_reference="IRDAI Guidelines on Cashless Claims",
+                is_enforceable=True
+            ))
+
+        # 4. Generate price comparisons
         for item in bill_data.items:
             comparison = self.rate_validator.compare_with_cghs_rate(item, nabh_status)
             if comparison:
@@ -73,12 +87,16 @@ class BillAnalyzer:
         else:
             overall_risk = Severity.COMPLIANT
         
-        # Calculate total overcharge
-        total_overcharge = sum(
-            (v.charged_amount or 0) - (v.expected_amount or 0)
-            for v in violations 
-            if v.type == ViolationType.PACKAGE_RATE_VIOLATION and v.charged_amount and v.expected_amount
-        )
+        # Calculate canonical total overcharge (₹ above CGHS rate)
+        # Includes both direct package violations and explicit balance billing where we have amounts.
+        total_overcharge = 0.0
+        for v in violations:
+            if v.charged_amount is None or v.expected_amount is None:
+                continue
+            if v.charged_amount <= v.expected_amount:
+                continue
+            if v.type in (ViolationType.PACKAGE_RATE_VIOLATION, ViolationType.BALANCE_BILLING):
+                total_overcharge += (v.charged_amount - v.expected_amount)
         
         # Summary (without emojis, structured text)
         if len(violations) == 0:
@@ -87,13 +105,21 @@ class BillAnalyzer:
                 "CGHS package rates and regulations."
             )
         else:
-            summary = (
-                f"CGHS-empanelled {nabh_status} hospital with CGHS package rates.\n\n"
-                f"Detected {len(violations)} violations of CGHS package rates (legally enforceable).\n"
-                f"Total overcharge: ₹{total_overcharge:,.2f}.\n\n"
-                "You can ask the hospital to correct the bill, refund overcharged amounts, and you may file "
-                "a complaint with CGHS authorities."
+            summary_lines = [
+                f"CGHS-empanelled {nabh_status} hospital with CGHS package rates.",
+                "",
+                f"Detected {len(violations)} violations of CGHS package rates (legally enforceable).",
+            ]
+            if total_overcharge > 0:
+                summary_lines.append(f"Estimated total overcharge vs CGHS rates: ₹{total_overcharge:,.2f}.")
+            summary_lines.extend(
+                [
+                    "",
+                    "You can ask the hospital to correct the bill, refund overcharged amounts, and you may file "
+                    "a complaint with CGHS authorities.",
+                ]
             )
+            summary = "\n".join(summary_lines)
         
         # Recommendations
         recommendations = []
@@ -146,6 +172,7 @@ class BillAnalyzer:
             insurance_rejection_reasons=rejection_reasons,
             timeline_plausibility_score=int(timeline_score),
             timeline_conflicts=timeline_conflicts,
+            total_overcharge=total_overcharge,
         )
     
     def _analyze_non_cghs_hospital(self, bill_data: BillData) -> BillAnalysisResult:
@@ -258,6 +285,7 @@ class BillAnalyzer:
             insurance_rejection_reasons=rejection_reasons,
             timeline_plausibility_score=int(timeline_score),
             timeline_conflicts=timeline_conflicts,
+            total_overcharge=0.0,
         )
 
     def _compute_timeline_score_and_conflicts(self, bill_data: BillData) -> tuple[int, list[str]]:
@@ -314,7 +342,7 @@ class BillAnalyzer:
         Heuristic fraud risk score (0–100) with simple breakdown.
         This is intentionally rule-based and explainable.
         """
-        # Document tampering (0–30): suspicious patterns + math inconsistencies
+        # Document / math inconsistencies (0–30): suspicious patterns + math inconsistencies
         doc_points = 0
         suspicious_count = sum(1 for v in violations if v.type == ViolationType.SUSPICIOUS_PATTERN)
         if suspicious_count:
@@ -408,7 +436,7 @@ class BillAnalyzer:
             label = "LOW RISK"
 
         breakdown = {
-            "Document Tampering": int(doc_points),
+            "Document inconsistencies": int(doc_points),
             "CGHS Violations": int(cg_points),
             "BIS Non-compliance": int(bis_points),
             "Temporal Anomalies": int(temporal_points),
@@ -427,13 +455,15 @@ class BillAnalyzer:
         """
         Heuristic probability (0–100) that an insurer/TPA will raise issues
         or reject part of the claim, based on missing fields and violations.
+        Tuned to be conservative: clean bills sit in ~10–30%, clearly bad
+        bills can reach 70–90%.
         """
-        prob = 10.0
+        prob = 5.0
         reasons: list[str] = []
 
         # Missing basic fields
         if not bill_data.bill_number:
-            prob += 15
+            prob += 20
             reasons.append("Bill number is missing on the invoice.")
         if not bill_data.bill_date:
             prob += 10
@@ -442,7 +472,7 @@ class BillAnalyzer:
             prob += 8
             reasons.append("Patient name is missing.")
         if not bill_data.items:
-            prob += 20
+            prob += 25
             reasons.append("No itemized charges are present (insurers expect line items).")
 
         # Severity of violations
@@ -450,22 +480,22 @@ class BillAnalyzer:
         medium_count = sum(1 for v in violations if v.severity == Severity.MEDIUM)
 
         if high_count:
-            prob += min(25, high_count * 8)
+            prob += min(18, high_count * 6)
             reasons.append("High-severity billing issues were detected.")
         if medium_count:
-            prob += min(15, medium_count * 4)
+            prob += min(12, medium_count * 3)
             reasons.append("Several medium-severity billing issues were detected.")
 
         # CGHS overcharge (for empanelled hospitals this is serious)
         if is_cghs and total_overcharge and total_overcharge > 0:
-            prob += min(20, (total_overcharge / 5000.0) * 5.0)
+            prob += min(18, (total_overcharge / 10000.0) * 8.0)
             reasons.append("Total charges exceed CGHS package rates for this empanelled hospital.")
 
         # Overall risk band
         if overall_risk == Severity.HIGH:
-            prob += 15
+            prob += 10
         elif overall_risk == Severity.MEDIUM:
-            prob += 7
+            prob += 5
 
         # Long / unclear stay
         if bill_data.admission_date and bill_data.discharge_date:
