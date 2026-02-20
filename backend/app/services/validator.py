@@ -30,26 +30,27 @@ logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Procedure category taxonomy
-# Used to restrict semantic search to the right medical domain before scoring
 # ---------------------------------------------------------------------------
 CATEGORY_KEYWORDS: Dict[str, List[str]] = {
     "radiology": [
         "xray", "x-ray", "x ray", "mri", "ct scan", "ct ", "usg", "ultrasound",
         "echo", "doppler", "mammogram", "fluoroscopy", "angiography", "dexa",
         "pet scan", "nuclear", "scintigraphy", "radiograph", "imaging",
-        "sonography", "scan", "radiolo",
+        "sonography", "scan", "radiolo", "cect", "hrct", "nect",
     ],
     "pathology": [
         "cbc", "blood", "urine", "stool", "culture", "sensitivity", "biopsy",
         "histopathology", "cytology", "serology", "electrolyte", "lft", "kft",
         "rft", "thyroid", "lipid", "glucose", "hba1c", "creatinine", "bilirubin",
         "protein", "albumin", "enzyme", "hormone", "smear", "gram stain",
-        "pathol", "lab", "laboratory", "test", "investigation",
+        "pathol", "lab", "laboratory", "test", "investigation", "tsh", "t3", "t4",
+        "aptt", "pt/inr", "coagulation", "sr.", "s.", "serum", "hemogram",
+        "haemogram", "cbp", "rbs", "bsf", "bsr",
     ],
     "icu": [
         "icu", "intensive care", "critical care", "hdu", "high dependency",
         "ventilator", "ventilation", "nicu", "picu", "post op observation",
-        "post-op", "recovery room", "step down",
+        "post-op", "recovery room", "step down", "pacu",
     ],
     "surgery": [
         "surgery", "surgical", "operation", "laparoscop", "appendectomy",
@@ -60,7 +61,7 @@ CATEGORY_KEYWORDS: Dict[str, List[str]] = {
     ],
     "room": [
         "room", "bed", "ward", "accommodation", "semi private",
-        "private", "general ward", "deluxe",
+        "private", "general ward", "deluxe", "twin sharing", "single room",
     ],
     "opd": [
         "consultation", "visit", "opd", "doctor fee", "physician fee",
@@ -80,10 +81,10 @@ CATEGORY_KEYWORDS: Dict[str, List[str]] = {
     ],
 }
 
-# Items that are billed per day — normalise total → per-day before comparing
+# Items billed per day — normalise total → per-day before comparing
 PER_DAY_KEYWORDS = [
-    "per day", "bed", "room", "ward", "icu", "hdu", "nursing",
-    "accommodation", "intensive care", "critical care",
+    "per day", "per night", "bed", "room", "ward", "icu", "hdu", "nursing",
+    "accommodation", "intensive care", "critical care", "night charges", "days",
 ]
 
 # ---------------------------------------------------------------------------
@@ -119,6 +120,49 @@ def _safe_float(value) -> Optional[float]:
         return None
 
 
+def _normalize_description(desc: str) -> str:
+    """
+    Normalize billing descriptions before matching.
+    Expands common clinical abbreviations and cleans formatting noise.
+    """
+    desc = desc.lower().strip()
+    replacements = [
+        # Imaging abbreviations
+        (r"\bcect\b",                   "ct scan with contrast"),
+        (r"\bnect\b",                   "ct scan plain"),
+        (r"\bhrct\b",                   "ct"),
+        (r"\busg\b",                    "ultrasound"),
+        (r"\becho\b",                   "echocardiography"),
+        # Lab abbreviations
+        (r"\bsr\.?\s*",                 "serum "),
+        (r"\bs\.?\s+(?=[a-z])",        "serum "),
+        (r"\brbs\b",                    "blood sugar random"),
+        (r"\bbsf\b",                    "blood sugar fasting"),
+        (r"\bbsr\b",                    "blood sugar random"),
+        (r"\bcbp\b",                    "cbc"),
+        (r"\bhemogram\b",               "complete blood count"),
+        (r"\bhaemogram\b",              "complete blood count"),
+        # Injection / medication
+        (r"\binj\.?\b",                 "injection"),
+        (r"\btab\.?\b",                 "tablet"),
+        (r"\bcap\.?\b",                 "capsule"),
+        # ICU / care level
+        (r"\bpacu\b",                   "post anesthesia care unit"),
+        (r"\bhdu\b",                    "high dependency unit"),
+        (r"\bnicu\b",                   "neonatal icu"),
+        (r"\bpicu\b",                   "paediatric icu"),
+        # Misc
+        (r"\bw/o\b",                    "without"),
+        (r"\bw/\b",                     "with "),
+        (r"&",                           "and"),
+        (r"\bpa\s+view\b",              "pa view"),
+        (r"\s+",                         " "),
+    ]
+    for pattern, replacement in replacements:
+        desc = re.sub(pattern, replacement, desc)
+    return desc.strip()
+
+
 # ---------------------------------------------------------------------------
 # Main class
 # ---------------------------------------------------------------------------
@@ -130,7 +174,7 @@ class SemanticRateValidator:
       Tier 1 — Skip generic aggregates (pharmacy total, misc, etc.)
       Tier 2 — Manual overrides  (exact / longest-alias match, correct rates)
       Tier 3 — Category-filtered semantic search  (cosine similarity in domain)
-               └─ LLM reranking when semantic confidence is moderate (60–88%)
+               └─ LLM reranking when semantic confidence is moderate (45–75%)
                   Batched into a SINGLE Gemini API call per bill to cut latency
       Tier 4 — Fuzzy fallback  (token_sort_ratio, threshold >= 70)
 
@@ -138,15 +182,21 @@ class SemanticRateValidator:
     """
 
     # Cosine similarity thresholds (0.0 – 1.0)
-    SEMANTIC_HIGH_CONFIDENCE = 0.88   # Trust semantic match directly
-    LLM_RERANK_MIN           = 0.60   # Below this — don't ask LLM
+    # NOTE: all-MiniLM-L6-v2 rarely exceeds 0.80 for medical text.
+    #       Thresholds adjusted down accordingly.
+    SEMANTIC_HIGH_CONFIDENCE = 0.75   # Trust semantic match directly (was 0.88)
+    LLM_RERANK_MIN           = 0.45   # Below this — don't ask LLM (was 0.60)
+
     # Minimum confidence % to flag a legal VIOLATION (CGHS hospital)
-    VIOLATION_MIN_CONFIDENCE = 75.0
+    VIOLATION_MIN_CONFIDENCE = 65.0   # (was 75.0 — too high for MiniLM scores)
     # Minimum confidence % for informational comparison (non-CGHS)
-    INFO_MIN_CONFIDENCE      = 85.0
+    INFO_MIN_CONFIDENCE      = 75.0   # (was 85.0)
     # Minimum deviation % to flag for non-CGHS
-    # (private hospitals legitimately charge >CGHS; only flag extreme outliers)
     NON_CGHS_MIN_DEVIATION   = 100.0
+
+    # ── Debug flag ───────────────────────────────────────────────────────
+    # Set to True to print per-item matching decisions.
+    DEBUG_ICU_ROOM = False
 
     def __init__(self, rates_json_path: str):
         # ── Load & clean CGHS rates ───────────────────────────────────────
@@ -162,7 +212,6 @@ class SemanticRateValidator:
             nabh_none    = nabh_val is None or (isinstance(nabh_val, float) and math.isnan(nabh_val))
             non_nabh_none = non_nabh_val is None or (isinstance(non_nabh_val, float) and math.isnan(non_nabh_val))
 
-            # Rows with both rates missing are section headers
             if nabh_none and non_nabh_none and rate.get("procedure"):
                 current_json_category = rate["procedure"].strip()
                 continue
@@ -177,12 +226,18 @@ class SemanticRateValidator:
         print(f"   ✓ Loaded {len(self.rates_db)} CGHS rate entries")
 
         # ── Manual overrides ─────────────────────────────────────────────
-        # Rules:
-        #  • aliases are complete, normalised billing descriptions
-        #  • rates are verified against CGHS 2024-25 rate list
-        #  • USG split by body region: KUB (₹680) != Abdomen & Pelvis (₹1,350)
-        #  • ICU split by care level: Full ICU (₹4,590) != HDU/post-op (₹2,800)
+        #
+        # IMPORTANT ORDERING:
+        #   More specific aliases must come BEFORE generic ones in this list
+        #   because _lookup_override uses longest-match and iterates in
+        #   insertion order. HDU/post-op entries must be defined BEFORE the
+        #   generic ICU entry so they don't get swallowed.
+        #
+        # KEY FIX: "post-op observation", "post op icu", "recovery room" have
+        #   been MOVED from the full ICU block to the HDU block because
+        #   post-operative observation is NOT full ICU care under CGHS.
         self._raw_overrides: List[dict] = [
+
             # ── OPD / Consultation ────────────────────────────────────────
             {
                 "aliases": [
@@ -193,38 +248,58 @@ class SemanticRateValidator:
                 "procedure": "Consultation OPD",
                 "non_nabh": 350, "nabh": 350, "confidence": 100,
             },
-            # ── Room / Ward ───────────────────────────────────────────────
+
+            # ── Room / Ward — EXPANDED ────────────────────────────────────
+            # Added: single room, twin sharing, deluxe, private variants
             {
                 "aliases": [
                     "general ward", "ward charges", "bed charges",
                     "room rent", "accommodation charges",
+                    "room charges", "bed rent", "bed charges per day",
+                    "single room", "twin sharing room", "twin sharing",
+                    "deluxe room", "semi private room", "private room",
+                    "shared room", "room and board", "room rent per day",
+                    "bed rent per day",
                 ],
                 "procedure": "General Ward (per day)",
                 "non_nabh": 1500, "nabh": 1500, "confidence": 95,
             },
-            # ── ICU — Full ────────────────────────────────────────────────
-            {
-                "aliases": [
-                    "icu charges", "icu", "intensive care unit",
-                    "intensive care charges", "critical care unit",
-                    "post-op icu", "post op icu", 
-                    "post-op observation", "post op observation",
-                    "recovery room charges",
-                ],
-                "procedure": "ICU including room rent",
-                "non_nabh": 4590, "nabh": 5400, "confidence": 95,
-            },
-            # ── HDU / Step-down (Strict aliases only) ────────────────────
-            # Users report "Post-op" is often billed as full ICU. 
-            # Only map explicit "HDU" or "Step down" to the lower rate.
+
+            # ── HDU / Step-down / Post-op — EXPANDED ─────────────────────
+            # FIX: post-op observation and recovery room moved HERE from full ICU.
+            # These are step-down / HDU level care, NOT full ICU (₹4,590).
+            # Correct CGHS rate: ₹2,800 non-NABH.
             {
                 "aliases": [
                     "hdu", "high dependency unit",
                     "step down unit", "step-down unit",
+                    "post-op icu", "post op icu",
+                    "post-op observation", "post op observation",
+                    "post operative observation", "post-operative observation",
+                    "post operative icu", "post-operative icu",
+                    "recovery room charges", "recovery room",
+                    "post anesthesia care unit", "post anaesthesia care unit",
+                    "pacu", "post anesthesia care", "post anaesthesia care",
+                    "high dependency care",
                 ],
                 "procedure": "HDU / Step-down",
                 "non_nabh": 2800, "nabh": 3200, "confidence": 90,
             },
+
+            # ── ICU — Full ────────────────────────────────────────────────
+            # FIX: post-op / recovery aliases REMOVED (moved to HDU above).
+            # Only genuine ICU descriptions remain here.
+            {
+                "aliases": [
+                    "icu charges", "icu", "intensive care unit",
+                    "intensive care charges", "critical care unit",
+                    "icu bed charges", "icu room charges",
+                    "critical care charges", "intensive care unit charges",
+                ],
+                "procedure": "ICU including room rent",
+                "non_nabh": 4590, "nabh": 5400, "confidence": 95,
+            },
+
             # ── ICU — Neonatal ────────────────────────────────────────────
             {
                 "aliases": [
@@ -234,9 +309,8 @@ class SemanticRateValidator:
                 "procedure": "NICU (per day)",
                 "non_nabh": 3500, "nabh": 4000, "confidence": 92,
             },
+
             # ── USG — Abdomen & Pelvis ────────────────────────────────────
-            # FIX: was wrongly mapped to KUB (Rs 680).
-            # Correct rate for USG Abdomen & Pelvis is Rs 1,350 non-NABH.
             {
                 "aliases": [
                     "usg abdomen & pelvis",
@@ -246,10 +320,12 @@ class SemanticRateValidator:
                     "ultrasound abdomen and pelvis",
                     "sonography abdomen pelvis",
                     "usg abdomen & pelvis with doppler",
+                    "ultrasound abdomen and pelvis with doppler",
                 ],
                 "procedure": "USG Abdomen & Pelvis",
                 "non_nabh": 1350, "nabh": 1600, "confidence": 98,
             },
+
             # ── USG — Whole Abdomen ───────────────────────────────────────
             {
                 "aliases": [
@@ -260,7 +336,8 @@ class SemanticRateValidator:
                 "procedure": "USG Whole Abdomen",
                 "non_nabh": 1200, "nabh": 1400, "confidence": 95,
             },
-            # ── USG — KUB (Kidney Ureter Bladder — different from abdomen) ─
+
+            # ── USG — KUB ─────────────────────────────────────────────────
             {
                 "aliases": [
                     "usg kub", "ultrasound kub",
@@ -272,7 +349,8 @@ class SemanticRateValidator:
                 "procedure": "USG KUB including PVR",
                 "non_nabh": 680, "nabh": 800, "confidence": 98,
             },
-            # ── USG — Pelvis only ─────────────────────────────────────────
+
+            # ── USG — Pelvis ──────────────────────────────────────────────
             {
                 "aliases": [
                     "usg pelvis", "ultrasound pelvis",
@@ -281,7 +359,8 @@ class SemanticRateValidator:
                 "procedure": "USG Pelvis",
                 "non_nabh": 800, "nabh": 950, "confidence": 95,
             },
-            # ── CT Scan ───────────────────────────────────────────────────
+
+            # ── CT Scan — with contrast ───────────────────────────────────
             {
                 "aliases": [
                     "ct scan abdomen contrast",
@@ -290,44 +369,57 @@ class SemanticRateValidator:
                     "cect abdomen",
                     "ct scan abdomen (contrast)",
                     "ct abdomen with contrast",
+                    "ct scan with contrast abdomen",
+                    "contrast ct abdomen",
+                    "ct scan whole abdomen contrast",
                 ],
                 "procedure": "CT Scan Whole Abdomen With Contrast",
                 "non_nabh": 4500, "nabh": 5200, "confidence": 98,
             },
+
+            # ── CT Scan — plain ───────────────────────────────────────────
             {
                 "aliases": [
                     "ct scan abdomen", "ct abdomen plain",
                     "ct abdomen without contrast",
                     "ct scan abdomen plain",
+                    "nect abdomen",
                 ],
                 "procedure": "CT Scan Whole Abdomen Plain",
                 "non_nabh": 3000, "nabh": 3500, "confidence": 95,
             },
+
+            # ── CT Chest / HRCT ───────────────────────────────────────────
             {
                 "aliases": [
                     "ct chest", "ct scan chest", "hrct chest",
                     "hrct thorax", "high resolution ct chest",
+                    "high resolution ct thorax",
                 ],
                 "procedure": "CT Chest / HRCT Thorax",
                 "non_nabh": 3500, "nabh": 4000, "confidence": 95,
             },
+
             # ── X-Ray ─────────────────────────────────────────────────────
             {
                 "aliases": [
                     "chest xray", "chest x-ray", "x-ray chest",
                     "xray chest", "chest x ray pa view",
                     "chest xray pa", "x-ray chest pa view",
-                    "chest pa view",
+                    "chest pa view", "x-ray chest pa",
                 ],
                 "procedure": "X-Ray Chest PA View",
                 "non_nabh": 150, "nabh": 175, "confidence": 98,
             },
-            # ── MRI ───────────────────────────────────────────────────────
+
+            # ── MRI Brain ─────────────────────────────────────────────────
             {
                 "aliases": ["mri brain", "mri head", "mri brain plain"],
                 "procedure": "MRI Brain Plain",
                 "non_nabh": 5500, "nabh": 6500, "confidence": 97,
             },
+
+            # ── MRI Spine ─────────────────────────────────────────────────
             {
                 "aliases": [
                     "mri spine", "mri lumbar spine",
@@ -337,15 +429,27 @@ class SemanticRateValidator:
                 "procedure": "MRI Spine (per region)",
                 "non_nabh": 5500, "nabh": 6500, "confidence": 95,
             },
+
             # ── ECG ───────────────────────────────────────────────────────
             {
                 "aliases": [
                     "ecg", "electrocardiogram", "ecg 12 lead",
-                    "12 lead ecg", "ecg - 12 lead",
+                    "12 lead ecg", "ecg - 12 lead", "ecg/ekg",
                 ],
                 "procedure": "ECG",
                 "non_nabh": 150, "nabh": 175, "confidence": 100,
             },
+
+            # ── 2D Echo / Echocardiography ────────────────────────────────
+            {
+                "aliases": [
+                    "2d echo", "2d echocardiography", "echocardiography",
+                    "echo cardiography", "cardiac echo", "echo",
+                ],
+                "procedure": "2D Echocardiography",
+                "non_nabh": 1200, "nabh": 1400, "confidence": 95,
+            },
+
             # ── Surgery packages ──────────────────────────────────────────
             {
                 "aliases": [
@@ -366,6 +470,7 @@ class SemanticRateValidator:
                 "procedure": "Laparoscopic Cholecystectomy",
                 "non_nabh": 22000, "nabh": 26000, "confidence": 97,
             },
+
             # ── Pathology ─────────────────────────────────────────────────
             {
                 "aliases": [
@@ -396,7 +501,7 @@ class SemanticRateValidator:
                 "aliases": [
                     "blood sugar random", "bsr",
                     "blood glucose random", "random blood sugar",
-                    "blood sugar - random",
+                    "blood sugar - random", "rbs",
                 ],
                 "procedure": "Blood Sugar (Random)",
                 "non_nabh": 60, "nabh": 70, "confidence": 100,
@@ -410,6 +515,73 @@ class SemanticRateValidator:
                 "procedure": "Blood Sugar (Fasting)",
                 "non_nabh": 60, "nabh": 70, "confidence": 100,
             },
+            {
+                "aliases": [
+                    "urine routine", "urine r/e", "urine examination",
+                    "urinalysis", "urine routine examination",
+                    "urine routine and microscopy", "urine r/m",
+                ],
+                "procedure": "Urine Routine & Microscopy",
+                "non_nabh": 80, "nabh": 100, "confidence": 100,
+            },
+            {
+                "aliases": [
+                    "serum creatinine", "s. creatinine", "sr. creatinine",
+                    "creatinine",
+                ],
+                "procedure": "Serum Creatinine",
+                "non_nabh": 80, "nabh": 100, "confidence": 98,
+            },
+            {
+                "aliases": [
+                    "tsh", "thyroid stimulating hormone",
+                    "t3 t4 tsh", "thyroid profile", "thyroid function test",
+                    "thyroid function tests",
+                ],
+                "procedure": "Thyroid Function Tests (T3, T4, TSH)",
+                "non_nabh": 350, "nabh": 400, "confidence": 97,
+            },
+            {
+                "aliases": [
+                    "pt/inr", "pt inr", "prothrombin time",
+                    "prothrombin time inr",
+                ],
+                "procedure": "PT/INR",
+                "non_nabh": 120, "nabh": 140, "confidence": 100,
+            },
+            {
+                "aliases": [
+                    "aptt", "activated partial thromboplastin time",
+                    "partial thromboplastin time",
+                ],
+                "procedure": "APTT",
+                "non_nabh": 120, "nabh": 140, "confidence": 100,
+            },
+            {
+                "aliases": [
+                    "coagulation profile", "coagulation screen",
+                    "clotting profile",
+                ],
+                "procedure": "Coagulation Profile",
+                "non_nabh": 300, "nabh": 350, "confidence": 95,
+            },
+            {
+                "aliases": [
+                    "lipid profile", "cholesterol profile",
+                    "lipid panel",
+                ],
+                "procedure": "Lipid Profile",
+                "non_nabh": 280, "nabh": 320, "confidence": 100,
+            },
+            {
+                "aliases": [
+                    "hba1c", "glycated haemoglobin", "glycated hemoglobin",
+                    "glycosylated haemoglobin",
+                ],
+                "procedure": "HbA1c",
+                "non_nabh": 300, "nabh": 350, "confidence": 100,
+            },
+
             # ── Misc procedures ───────────────────────────────────────────
             {
                 "aliases": ["blood transfusion"],
@@ -417,14 +589,14 @@ class SemanticRateValidator:
                 "non_nabh": 1000, "nabh": 1000, "confidence": 100,
             },
             {
-                "aliases": ["nebulization", "nebulisation"],
+                "aliases": ["nebulization", "nebulisation", "nebulizer treatment"],
                 "procedure": "Nebulization",
                 "non_nabh": 100, "nabh": 100, "confidence": 100,
             },
             {
                 "aliases": [
                     "injection charge", "injection administration",
-                    "inj administration fee",
+                    "inj administration fee", "injection charges",
                 ],
                 "procedure": "Injection Administration",
                 "non_nabh": 50, "nabh": 50, "confidence": 100,
@@ -446,18 +618,28 @@ class SemanticRateValidator:
                 "procedure": "Dietician Consultation",
                 "non_nabh": 300, "nabh": 350, "confidence": 90,
             },
+            {
+                "aliases": [
+                    "dressing", "wound dressing", "dressing charges",
+                    "wound care",
+                ],
+                "procedure": "Wound Dressing",
+                "non_nabh": 150, "nabh": 175, "confidence": 90,
+            },
         ]
 
         # Build alias → override dict (lowercase keys)
+        # Apply _normalize_description to alias keys so they match
+        # normalized billing descriptions at lookup time.
         self.manual_overrides: Dict[str, dict] = {}
         for entry in self._raw_overrides:
             for alias in entry["aliases"]:
+                normalized_alias = _normalize_description(alias.lower().strip())
+                self.manual_overrides[normalized_alias] = entry
+                # Also store original (non-normalized) for direct exact match
                 self.manual_overrides[alias.lower().strip()] = entry
 
         # ── Skip terms ───────────────────────────────────────────────────
-        # FIX: use proper single-backslash raw strings for word boundaries.
-        # r"\bmisc\b"   <- correct  (matches the word "misc")
-        # r"\\bmisc\\b" <- WRONG    (matches the literal string \bmisc\b)
         self._skip_terms_raw = [
             "total", "subtotal", "amount due", "balance due", "net amount",
             "drugs", "pharmacy", "medicines", "consumables", "disposables",
@@ -465,7 +647,6 @@ class SemanticRateValidator:
             r"\bmisc\b", "miscellaneous",
             "round off", r"\btax\b", r"\bgst\b", "service charge",
             "ward procedures", "treatment fee",
-            # Nursing is bundled in room rent under CGHS — skip standalone
             r"\bnursing\b",
         ]
         self._skip_patterns = [
@@ -482,6 +663,8 @@ class SemanticRateValidator:
 
         try:
             print("   🧠 Loading semantic matching model...")
+            # NOTE: Consider upgrading to "pritamdeka/S-PubMedBert-MS-MARCO"
+            # for significantly better medical abbreviation understanding.
             self.model = SentenceTransformer("all-MiniLM-L6-v2")
             self.procedures = [
                 r.get("procedure", "") for r in self.rates_db if r.get("procedure")
@@ -503,7 +686,7 @@ class SemanticRateValidator:
 
         # ── LLM client (Gemini) ───────────────────────────────────────────
         self.llm_client = None
-        self.llm_model_name = "gemini-2.0-flash"   # verified model string
+        self.llm_model_name = "gemini-2.5-flash"
 
         if GEMINI_AVAILABLE and getattr(settings, "GOOGLE_API_KEY", None):
             try:
@@ -542,13 +725,15 @@ class SemanticRateValidator:
             return (None, None, 0.0)
 
         item_lower = item_description.lower().strip()
+        item_normalized = _normalize_description(item_lower)
 
         # Tier 1 — skip generic aggregates
         if self._should_skip(item_lower):
             return (None, "Aggregate item — skipped", 0.0)
 
         # Tier 2 — manual overrides (highest precision)
-        override = self._lookup_override(item_lower)
+        # Try both normalized and raw description for best coverage
+        override = self._lookup_override(item_normalized) or self._lookup_override(item_lower)
         if override:
             rate = (
                 override["nabh"] if nabh_status == "NABH/ NABL"
@@ -558,10 +743,11 @@ class SemanticRateValidator:
 
         # Tier 3 — semantic + LLM reranking
         if self.semantic_available:
-            return self._semantic_match(item_description, nabh_status)
+            # Use normalized description for better embedding similarity
+            return self._semantic_match(item_normalized, nabh_status, original=item_description)
 
         # Tier 4 — fuzzy fallback
-        return self._fuzzy_match(item_description, nabh_status)
+        return self._fuzzy_match(item_lower, nabh_status)
 
     def check_rate_violations(
         self,
@@ -571,19 +757,29 @@ class SemanticRateValidator:
     ) -> List[Violation]:
         """
         Return Violation objects for all items that exceed CGHS rates.
-
-        For CGHS hospitals violations are legally enforceable.
-        For non-CGHS they are informational only, shown when deviation
-        exceeds NON_CGHS_MIN_DEVIATION (100%).
         """
         violations: List[Violation] = []
 
-        # Pre-populate LLM cache for ALL moderate-confidence items in ONE
-        # Gemini API call — avoids N sequential calls during the loop below.
         if self.semantic_available and self.llm_client:
             self._batch_llm_rerank(bill_data.items, nabh_status)
 
         for item in bill_data.items:
+            # ── Optional ICU/Room debug logging ──────────────────────────
+            if self.DEBUG_ICU_ROOM:
+                desc_lower = item.description.lower()
+                if any(kw in desc_lower for kw in ["icu", "room", "ward", "hdu", "bed", "recovery"]):
+                    cghs_debug, proc_debug, conf_debug = self.find_cghs_rate_with_confidence(
+                        item.description, nabh_status
+                    )
+                    normalised_debug = self._normalise_charge(item)
+                    logger.debug(
+                        f"[ICU/ROOM DEBUG] '{item.description}'\n"
+                        f"  → Matched: '{proc_debug}' | CGHS: ₹{cghs_debug} "
+                        f"| Conf: {conf_debug:.1f}%\n"
+                        f"  → Billed total: ₹{item.total_price} "
+                        f"| Qty: {item.quantity} | Normalised: ₹{normalised_debug}"
+                    )
+
             cghs_rate, matched_proc, confidence = self.find_cghs_rate_with_confidence(
                 item.description, nabh_status
             )
@@ -591,7 +787,6 @@ class SemanticRateValidator:
             if cghs_rate is None:
                 continue
 
-            # Use same normalisation as compare_with_cghs_rate for consistency
             charged = self._normalise_charge(item)
             if charged is None or charged <= cghs_rate:
                 continue
@@ -686,11 +881,7 @@ class SemanticRateValidator:
     # ──────────────────────────────────────────────────────────────────────
 
     def _should_skip(self, item_lower: str) -> bool:
-        """
-        Return True if item is a generic aggregate that should not be matched.
-        Uses word-boundary regex — prevents 'Diagnostic Imaging' being skipped
-        because it contains 'diagnostic'.
-        """
+        """Return True if item is a generic aggregate that should not be matched."""
         for pattern in self._skip_patterns:
             if pattern.search(item_lower):
                 return True
@@ -699,16 +890,20 @@ class SemanticRateValidator:
     def _lookup_override(self, item_lower: str) -> Optional[dict]:
         """
         Manual override lookup.
-          (a) Exact alias match
+          (a) Exact key match (fastest path)
           (b) Longest alias that appears as a complete word-bounded phrase
-              — prevents 'usg abdomen' from eating 'usg abdomen & pelvis'
+              — uses \\w boundary (covers letters, digits, underscore)
+              — prevents 'usg abdomen' matching inside 'usg abdomen & pelvis'
         """
+        # (a) Exact match
         if item_lower in self.manual_overrides:
             return self.manual_overrides[item_lower]
 
+        # (b) Longest word-bounded substring match
         best_alias: Optional[str] = None
         for alias in self.manual_overrides:
-            pattern = r"(?<![a-z])" + re.escape(alias) + r"(?![a-z])"
+            # Use \w word boundary — safer than [a-z] which misses digits/hyphens
+            pattern = r"(?<!\w)" + re.escape(alias) + r"(?!\w)"
             if re.search(pattern, item_lower):
                 if best_alias is None or len(alias) > len(best_alias):
                     best_alias = alias
@@ -719,10 +914,13 @@ class SemanticRateValidator:
         self,
         item_description: str,
         nabh_status: str,
+        original: str = "",
     ) -> Tuple[Optional[float], Optional[str], float]:
         """
         Category-filtered semantic match with LLM reranking for ambiguous cases.
+        'original' is the raw description used as LLM cache key.
         """
+        cache_key = original or item_description
         try:
             item_embedding = self.model.encode(
                 [item_description], show_progress_bar=False
@@ -738,21 +936,34 @@ class SemanticRateValidator:
 
             # High confidence — trust semantic directly
             if best_score >= self.SEMANTIC_HIGH_CONFIDENCE:
+                logger.debug(
+                    f"Semantic HIGH confidence match: '{item_description}' → "
+                    f"'{best['procedure'].get('procedure')}' ({best_score:.3f})"
+                )
                 return self._candidate_to_result(
                     best["procedure"], nabh_status, best_score
                 )
 
-            # Moderate confidence — check LLM cache first, then call if needed
+            # Moderate confidence — check LLM cache first
             if best_score >= self.LLM_RERANK_MIN and self.llm_client:
-                llm_result = self._get_llm_result(item_description, candidates)
+                llm_result = self._get_llm_result(cache_key, candidates)
                 if llm_result:
                     # Blended confidence: 40% semantic weight + 60% LLM weight
                     blended = min(92.0, (best_score * 100 * 0.4) + (95.0 * 0.6))
+                    logger.debug(
+                        f"LLM rerank accepted: '{item_description}' → "
+                        f"'{llm_result['procedure'].get('procedure')}' "
+                        f"(blended conf: {blended:.1f}%)"
+                    )
                     return self._candidate_to_result(
                         llm_result["procedure"], nabh_status, blended / 100
                     )
 
             # Low confidence — return raw (unlikely to pass violation threshold)
+            logger.debug(
+                f"Low confidence match: '{item_description}' → "
+                f"'{best['procedure'].get('procedure')}' ({best_score:.3f})"
+            )
             return self._candidate_to_result(best["procedure"], nabh_status, best_score)
 
         except Exception as exc:
@@ -835,9 +1046,6 @@ class SemanticRateValidator:
         """
         Batch LLM reranking: ONE Gemini API call for all moderate-confidence
         items in the bill.  Results stored in self._llm_cache.
-
-        This avoids N sequential API calls which would add 3-8 seconds of
-        latency for a typical bill with 15-20 items.
         """
         if not self.llm_client or not self.semantic_available:
             return
@@ -847,14 +1055,18 @@ class SemanticRateValidator:
 
         for item in items:
             item_lower = item.description.lower().strip()
-            if self._should_skip(item_lower) or self._lookup_override(item_lower):
-                continue  # Skip terms or overrides handle these
+            item_normalized = _normalize_description(item_lower)
+
+            if self._should_skip(item_lower):
+                continue
+            if self._lookup_override(item_normalized) or self._lookup_override(item_lower):
+                continue
 
             embedding = self.model.encode(
-                [item.description], show_progress_bar=False
+                [item_normalized], show_progress_bar=False
             )
             candidates, best_score = self._get_top_k_candidates(
-                embedding, item.description, k=5
+                embedding, item_normalized, k=5
             )
 
             if self.LLM_RERANK_MIN <= best_score < self.SEMANTIC_HIGH_CONFIDENCE:
@@ -863,7 +1075,6 @@ class SemanticRateValidator:
         if not moderate_items:
             return
 
-        # Build a single batched prompt
         prompt_parts = [
             "You are a medical billing expert matching Indian hospital bill items "
             "to official CGHS (Central Government Health Scheme) procedure names.\n\n"
@@ -872,10 +1083,12 @@ class SemanticRateValidator:
             "Strict rules:\n"
             "- Body region must match: 'Abdomen' != 'Chest', 'Abdomen' != 'KUB'\n"
             "- KUB = Kidney Ureter Bladder (NOT a general abdomen scan)\n"
-            "- Post-op observation ICU = HDU / step-down level, NOT full ICU\n"
-            "- CBC = Complete Blood Count, LFT = Liver Function, "
-            "KFT = Kidney Function\n"
-            "- USG/Ultrasound/Sonography are the same modality\n\n"
+            "- ICU = full intensive care (₹4,590/day)\n"
+            "- Post-op observation / recovery room = HDU level (₹2,800/day), NOT full ICU\n"
+            "- HDU = High Dependency Unit = Step-down unit (lower acuity than ICU)\n"
+            "- CBC = Complete Blood Count, LFT = Liver Function, KFT = Kidney Function\n"
+            "- USG/Ultrasound/Sonography are the same modality\n"
+            "- CECT = CT with contrast, NECT = CT plain/without contrast\n\n"
         ]
 
         for i, (desc, cands) in enumerate(moderate_items):
@@ -900,7 +1113,6 @@ class SemanticRateValidator:
             ans_text = response.text.strip()
             logger.info(f"LLM batch rerank response: {ans_text}")
 
-            # FIX: correct single-backslash regex to find JSON array
             json_match = re.search(r"\[[\d,\s]+\]", ans_text)
             if not json_match:
                 logger.warning(
@@ -925,9 +1137,7 @@ class SemanticRateValidator:
                     )
                 else:
                     self._llm_cache[desc] = None
-                    logger.info(
-                        f"LLM rejected all candidates for: '{desc}'"
-                    )
+                    logger.info(f"LLM rejected all candidates for: '{desc}'")
 
         except Exception as exc:
             logger.warning(f"Batch LLM reranking failed: {exc}")
@@ -938,9 +1148,7 @@ class SemanticRateValidator:
         item_description: str,
         candidates: List[dict],
     ) -> Optional[dict]:
-        """
-        Single-item LLM reranking (fallback when batch cache not available).
-        """
+        """Single-item LLM reranking (fallback when batch cache not available)."""
         if not self.llm_client:
             return None
 
@@ -957,7 +1165,9 @@ class SemanticRateValidator:
                 f'Candidates:\n{candidate_text}\n'
                 f'Rules:\n'
                 f'- Body region must match exactly (Abdomen != KUB != Chest)\n'
-                f'- Post-op observation ICU = HDU level, NOT full ICU\n\n'
+                f'- Post-op observation / recovery room = HDU level, NOT full ICU\n'
+                f'- ICU = full intensive care only\n'
+                f'- CECT = CT with contrast, NECT = CT plain\n\n'
                 f'Return ONLY a single integer (0-{len(candidates)}). '
                 f'0 = no match.'
             )
@@ -968,7 +1178,6 @@ class SemanticRateValidator:
             )
             ans_text = response.text.strip()
 
-            # FIX: correct single-backslash word-boundary regex
             match = re.search(r"\b([0-5])\b", ans_text)
             if match:
                 idx = int(match.group(1))
@@ -981,9 +1190,7 @@ class SemanticRateValidator:
                     self._llm_cache[item_description] = chosen
                     return chosen
                 else:
-                    logger.info(
-                        f"LLM rejected all for: '{item_description}'"
-                    )
+                    logger.info(f"LLM rejected all for: '{item_description}'")
                     self._llm_cache[item_description] = None
                     return None
 
@@ -1054,11 +1261,20 @@ class SemanticRateValidator:
         """
         Return the charge to compare against the CGHS per-occurrence rate.
 
-        For per-day items (room, ICU, nursing…) with quantity > 1,
-        divides total_price by quantity to get the per-day rate:
+        For per-day items (room, ICU, nursing…) this extracts the per-day
+        rate from whichever of two billing styles the hospital used:
 
-          3-day ICU: total ₹25,500 → per-day ₹8,500 vs CGHS ₹4,590  (+85%)
-          Without this it would show +455% which is meaningless.
+          Style A — quantity=N, total=N×rate
+                    e.g. qty=3, total=₹25,500 → per-day=₹8,500
+                    (quantity field is set correctly)
+
+          Style B — quantity=1 or None, total=N×rate, days in description
+                    e.g. "ICU charges (3 days)", qty=1, total=₹25,500
+                    → extract "3" from description → per-day=₹8,500
+                    (common in many hospital billing systems)
+
+        Without this, a legitimate 3-day ICU stay would show as a 455%
+        violation when it might only be a 85% violation per day.
 
         Used in BOTH check_rate_violations AND compare_with_cghs_rate to
         guarantee consistent numbers across all output fields.
@@ -1067,8 +1283,32 @@ class SemanticRateValidator:
         if total is None:
             return None
 
-        qty = _safe_float(item.quantity) if item.quantity else None
-        if qty and qty > 1 and _is_per_day_item(item.description):
-            return _safe_float(total / qty)
+        if _is_per_day_item(item.description):
+            # Style A: quantity explicitly > 1
+            qty = _safe_float(item.quantity) if item.quantity else None
+            if qty and qty > 1:
+                per_day = _safe_float(total / qty)
+                logger.debug(
+                    f"[normalise] Style A per-day: '{item.description}' "
+                    f"₹{total} / {qty} = ₹{per_day}"
+                )
+                return per_day
+
+            # Style B: extract day count from description text
+            # Matches: "3 days", "3 nights", "3-day", "3 day"
+            day_match = re.search(
+                r'(\d+)\s*[-]?\s*(?:day|days|night|nights)',
+                item.description,
+                re.IGNORECASE,
+            )
+            if day_match:
+                days = int(day_match.group(1))
+                if days > 1:
+                    per_day = _safe_float(total / days)
+                    logger.debug(
+                        f"[normalise] Style B per-day: '{item.description}' "
+                        f"₹{total} / {days} days = ₹{per_day}"
+                    )
+                    return per_day
 
         return total

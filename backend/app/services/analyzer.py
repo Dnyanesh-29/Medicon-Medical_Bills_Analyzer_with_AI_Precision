@@ -95,7 +95,7 @@ class BillAnalyzer:
                 continue
             if v.charged_amount <= v.expected_amount:
                 continue
-            if v.type in (ViolationType.PACKAGE_RATE_VIOLATION, ViolationType.BALANCE_BILLING):
+            if v.type == ViolationType.PACKAGE_RATE_VIOLATION:
                 total_overcharge += (v.charged_amount - v.expected_amount)
         
         # Summary (without emojis, structured text)
@@ -105,10 +105,18 @@ class BillAnalyzer:
                 "CGHS package rates and regulations."
             )
         else:
+            # Split violations count
+            pkg_violations = sum(1 for v in violations if v.type == ViolationType.PACKAGE_RATE_VIOLATION)
+            ins_violations = sum(1 for v in violations if v.type == ViolationType.BALANCE_BILLING)
+            
+            violation_msg = f"Detected {pkg_violations} CGHS rate violations"
+            if ins_violations > 0:
+                violation_msg += f" + {ins_violations} insurance billing issue"
+            
             summary_lines = [
                 f"CGHS-empanelled {nabh_status} hospital with CGHS package rates.",
                 "",
-                f"Detected {len(violations)} violations of CGHS package rates (legally enforceable).",
+                f"{violation_msg} (legally enforceable).",
             ]
             if total_overcharge > 0:
                 summary_lines.append(f"Estimated total overcharge vs CGHS rates: ₹{total_overcharge:,.2f}.")
@@ -133,7 +141,7 @@ class BillAnalyzer:
             recommendations.append("Bill appears compliant - proceed with payment/insurance claim")
 
         # Derived risk metrics
-        fraud_score, fraud_label, fraud_breakdown = self._compute_fraud_risk(
+        fraud_score, fraud_label, fraud_breakdown, doc_details = self._compute_fraud_risk(
             bill_data=bill_data,
             violations=violations,
             price_comparisons=price_comparisons,
@@ -173,6 +181,7 @@ class BillAnalyzer:
             timeline_plausibility_score=int(timeline_score),
             timeline_conflicts=timeline_conflicts,
             total_overcharge=total_overcharge,
+            document_inconsistency_details=doc_details,
         )
     
     def _analyze_non_cghs_hospital(self, bill_data: BillData) -> BillAnalysisResult:
@@ -246,7 +255,7 @@ class BillAnalyzer:
             recommendations.insert(0, "Charges are significantly higher than CGHS reference rates - consider price negotiation")
 
         # Derived risk metrics (for non-CGHS we treat CGHS differences as reference only)
-        fraud_score, fraud_label, fraud_breakdown = self._compute_fraud_risk(
+        fraud_score, fraud_label, fraud_breakdown, doc_details = self._compute_fraud_risk(
             bill_data=bill_data,
             violations=violations,
             price_comparisons=price_comparisons,
@@ -286,6 +295,7 @@ class BillAnalyzer:
             timeline_plausibility_score=int(timeline_score),
             timeline_conflicts=timeline_conflicts,
             total_overcharge=0.0,
+            document_inconsistency_details=doc_details,
         )
 
     def _compute_timeline_score_and_conflicts(self, bill_data: BillData) -> tuple[int, list[str]]:
@@ -340,8 +350,9 @@ class BillAnalyzer:
     ) -> tuple:
         """
         Heuristic fraud risk score (0–100) with simple breakdown.
-        This is intentionally rule-based and explainable.
+        Also returns specific explanation for document inconsistencies if any.
         """
+        doc_details_msg = None
         # Document / math inconsistencies (0–30): suspicious patterns + math inconsistencies
         doc_points = 0
         suspicious_count = sum(1 for v in violations if v.type == ViolationType.SUSPICIOUS_PATTERN)
@@ -350,13 +361,23 @@ class BillAnalyzer:
 
         if bill_data.items:
             items_sum = sum(item.total_price for item in bill_data.items)
-            if bill_data.total_amount:
+            if bill_data.total_amount and items_sum > 0:
                 diff = abs(items_sum - bill_data.total_amount)
                 # Large mismatch between sum of items and total amount
                 if diff > 0.15 * bill_data.total_amount:
                     doc_points = max(doc_points, 25)
+                    doc_details_msg = (
+                        f"Sum of itemized charges: ₹{items_sum:,.0f}\n"
+                        f"Total amount shown: ₹{bill_data.total_amount:,.0f}\n"
+                        f"Unexplained difference: ₹{diff:,.0f} (appears to be unlabeled GST)"
+                    )
                 elif diff > 0.08 * bill_data.total_amount:
                     doc_points = max(doc_points, 15)
+                    doc_details_msg = (
+                        f"Sum of itemized charges: ₹{items_sum:,.0f}\n"
+                        f"Total amount shown: ₹{bill_data.total_amount:,.0f}\n"
+                        f"Difference: ₹{diff:,.0f}"
+                    )
         doc_points = min(30, doc_points)
 
         # CGHS violations (0–30): only fully weighted for CGHS hospitals
@@ -442,7 +463,7 @@ class BillAnalyzer:
             "Temporal Anomalies": int(temporal_points),
             "Consumable Padding": int(consumable_points),
         }
-        return int(total_score), label, breakdown
+        return int(total_score), label, breakdown, doc_details_msg
 
     def _compute_insurance_rejection(
         self,

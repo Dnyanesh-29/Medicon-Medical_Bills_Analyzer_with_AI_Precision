@@ -123,6 +123,7 @@ class BillAnalysisResult(BaseModel):
     insurance_rejection_probability: float = 0.0  # 0–100
     insurance_rejection_label: str = "LOW"
     insurance_rejection_reasons: List[str] = Field(default_factory=list)
+    document_inconsistency_details: Optional[str] = None
     # Timeline plausibility
     timeline_plausibility_score: int = 10  # 0–10
     timeline_conflicts: List[str] = Field(default_factory=list)
