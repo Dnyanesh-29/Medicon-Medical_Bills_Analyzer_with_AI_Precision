@@ -19,7 +19,7 @@ except ImportError:
 
 from app.core.config import settings
 from app.models.schemas import (
-    BillData, BillItem, Violation, PriceComparison,
+    BillData, BillItem, Violation, PriceComparison, 
     ViolationType, Severity
 )
 
@@ -188,21 +188,25 @@ class SemanticRateValidator:
     LLM_RERANK_MIN           = 0.45   # Below this — don't ask LLM (was 0.60)
 
     # Minimum confidence % to flag a legal VIOLATION (CGHS hospital)
-    VIOLATION_MIN_CONFIDENCE = 65.0   # (was 75.0 — too high for MiniLM scores)
+    VIOLATION_MIN_CONFIDENCE   = 65.0   # below this → item skipped entirely
+    # Confidence below this cap severity at MEDIUM and add a dispute qualifier
+    # Rationale: semantic models rarely exceed 0.80; 65–79 is borderline territory
+    # where the match may well be correct but the hospital can plausibly contest it.
+    VIOLATION_DISPUTED_CONFIDENCE = 80.0
     # Minimum confidence % for informational comparison (non-CGHS)
-    INFO_MIN_CONFIDENCE      = 75.0   # (was 85.0)
+    INFO_MIN_CONFIDENCE        = 75.0   # (was 85.0)
     # Minimum deviation % to flag for non-CGHS
-    NON_CGHS_MIN_DEVIATION   = 100.0
+    NON_CGHS_MIN_DEVIATION     = 100.0
 
     # ── Debug flag ───────────────────────────────────────────────────────
     # Set to True to print per-item matching decisions.
     DEBUG_ICU_ROOM = False
-
+    
     def __init__(self, rates_json_path: str):
         # ── Load & clean CGHS rates ───────────────────────────────────────
         with open(rates_json_path, "r", encoding="utf-8") as f:
             raw_rates = json.load(f)
-
+        
         self.rates_db: List[dict] = []
         current_json_category = "General"
 
@@ -222,413 +226,35 @@ class SemanticRateValidator:
             }
             cleaned["json_category"] = current_json_category
             self.rates_db.append(cleaned)
-
+        
         print(f"   ✓ Loaded {len(self.rates_db)} CGHS rate entries")
-
+        
         # ── Manual overrides ─────────────────────────────────────────────
-        #
-        # IMPORTANT ORDERING:
-        #   More specific aliases must come BEFORE generic ones in this list
-        #   because _lookup_override uses longest-match and iterates in
-        #   insertion order. HDU/post-op entries must be defined BEFORE the
-        #   generic ICU entry so they don't get swallowed.
-        #
-        # KEY FIX: "post-op observation", "post op icu", "recovery room" have
-        #   been MOVED from the full ICU block to the HDU block because
-        #   post-operative observation is NOT full ICU care under CGHS.
-        self._raw_overrides: List[dict] = [
+        # Load from external manual_overrides.json if present (next to cghs_rates.json).
+        # This allows adding/editing mappings without touching Python code.
+        # Fall back to the bundled defaults below if not found.
+        _overrides_path = os.path.join(
+            os.path.dirname(rates_json_path), "manual_overrides.json"
+        )
+        if os.path.isfile(_overrides_path):
+            try:
+                with open(_overrides_path, "r", encoding="utf-8") as _f:
+                    _external = json.load(_f)
+                # Strip entries that are only comments (no 'aliases' key)
+                self._raw_overrides: List[dict] = [
+                    e for e in _external if "aliases" in e
+                ]
+                print(f"   ✓ Loaded {len(self._raw_overrides)} manual override entries from {_overrides_path}")
+            except Exception as _exc:
+                print(f"   ⚠️  Could not load manual_overrides.json: {_exc} — using built-in defaults")
+                self._raw_overrides: List[dict] = self._builtin_overrides()
+        else:
+            print(f"   ℹ️  manual_overrides.json not found — using built-in defaults")
+            self._raw_overrides: List[dict] = self._builtin_overrides()
 
-            # ── OPD / Consultation ────────────────────────────────────────
-            {
-                "aliases": [
-                    "consultation", "opd", "doctor visit",
-                    "professional fee", "doctor fee", "specialist consultation",
-                    "physician fee",
-                ],
-                "procedure": "Consultation OPD",
-                "non_nabh": 350, "nabh": 350, "confidence": 100,
-            },
-
-            # ── Room / Ward — EXPANDED ────────────────────────────────────
-            # Added: single room, twin sharing, deluxe, private variants
-            {
-                "aliases": [
-                    "general ward", "ward charges", "bed charges",
-                    "room rent", "accommodation charges",
-                    "room charges", "bed rent", "bed charges per day",
-                    "single room", "twin sharing room", "twin sharing",
-                    "deluxe room", "semi private room", "private room",
-                    "shared room", "room and board", "room rent per day",
-                    "bed rent per day",
-                ],
-                "procedure": "General Ward (per day)",
-                "non_nabh": 1500, "nabh": 1500, "confidence": 95,
-            },
-
-            # ── HDU / Step-down / Post-op — EXPANDED ─────────────────────
-            # FIX: post-op observation and recovery room moved HERE from full ICU.
-            # These are step-down / HDU level care, NOT full ICU (₹4,590).
-            # Correct CGHS rate: ₹2,800 non-NABH.
-            {
-                "aliases": [
-                    "hdu", "high dependency unit",
-                    "step down unit", "step-down unit",
-                    "post-op icu", "post op icu",
-                    "post-op observation", "post op observation",
-                    "post operative observation", "post-operative observation",
-                    "post operative icu", "post-operative icu",
-                    "recovery room charges", "recovery room",
-                    "post anesthesia care unit", "post anaesthesia care unit",
-                    "pacu", "post anesthesia care", "post anaesthesia care",
-                    "high dependency care",
-                ],
-                "procedure": "HDU / Step-down",
-                "non_nabh": 2800, "nabh": 3200, "confidence": 90,
-            },
-
-            # ── ICU — Full ────────────────────────────────────────────────
-            # FIX: post-op / recovery aliases REMOVED (moved to HDU above).
-            # Only genuine ICU descriptions remain here.
-            {
-                "aliases": [
-                    "icu charges", "icu", "intensive care unit",
-                    "intensive care charges", "critical care unit",
-                    "icu bed charges", "icu room charges",
-                    "critical care charges", "intensive care unit charges",
-                ],
-                "procedure": "ICU including room rent",
-                "non_nabh": 4590, "nabh": 5400, "confidence": 95,
-            },
-
-            # ── ICU — Neonatal ────────────────────────────────────────────
-            {
-                "aliases": [
-                    "nicu", "neonatal icu", "neonatal intensive care",
-                    "newborn icu",
-                ],
-                "procedure": "NICU (per day)",
-                "non_nabh": 3500, "nabh": 4000, "confidence": 92,
-            },
-
-            # ── USG — Abdomen & Pelvis ────────────────────────────────────
-            {
-                "aliases": [
-                    "usg abdomen & pelvis",
-                    "usg abdomen and pelvis",
-                    "usg abdomen pelvis",
-                    "ultrasound abdomen pelvis",
-                    "ultrasound abdomen and pelvis",
-                    "sonography abdomen pelvis",
-                    "usg abdomen & pelvis with doppler",
-                    "ultrasound abdomen and pelvis with doppler",
-                ],
-                "procedure": "USG Abdomen & Pelvis",
-                "non_nabh": 1350, "nabh": 1600, "confidence": 98,
-            },
-
-            # ── USG — Whole Abdomen ───────────────────────────────────────
-            {
-                "aliases": [
-                    "usg abdomen", "ultrasound abdomen",
-                    "sonography abdomen", "usg whole abdomen",
-                    "ultrasound whole abdomen",
-                ],
-                "procedure": "USG Whole Abdomen",
-                "non_nabh": 1200, "nabh": 1400, "confidence": 95,
-            },
-
-            # ── USG — KUB ─────────────────────────────────────────────────
-            {
-                "aliases": [
-                    "usg kub", "ultrasound kub",
-                    "usg kidney ureter bladder",
-                    "usg whole abdomen kub",
-                    "usg abdomen kub",
-                    "usg whole abdomen / kub",
-                ],
-                "procedure": "USG KUB including PVR",
-                "non_nabh": 680, "nabh": 800, "confidence": 98,
-            },
-
-            # ── USG — Pelvis ──────────────────────────────────────────────
-            {
-                "aliases": [
-                    "usg pelvis", "ultrasound pelvis",
-                    "usg lower abdomen", "sonography pelvis",
-                ],
-                "procedure": "USG Pelvis",
-                "non_nabh": 800, "nabh": 950, "confidence": 95,
-            },
-
-            # ── CT Scan — with contrast ───────────────────────────────────
-            {
-                "aliases": [
-                    "ct scan abdomen contrast",
-                    "ct abdomen contrast",
-                    "ct whole abdomen with contrast",
-                    "cect abdomen",
-                    "ct scan abdomen (contrast)",
-                    "ct abdomen with contrast",
-                    "ct scan with contrast abdomen",
-                    "contrast ct abdomen",
-                    "ct scan whole abdomen contrast",
-                ],
-                "procedure": "CT Scan Whole Abdomen With Contrast",
-                "non_nabh": 4500, "nabh": 5200, "confidence": 98,
-            },
-
-            # ── CT Scan — plain ───────────────────────────────────────────
-            {
-                "aliases": [
-                    "ct scan abdomen", "ct abdomen plain",
-                    "ct abdomen without contrast",
-                    "ct scan abdomen plain",
-                    "nect abdomen",
-                ],
-                "procedure": "CT Scan Whole Abdomen Plain",
-                "non_nabh": 3000, "nabh": 3500, "confidence": 95,
-            },
-
-            # ── CT Chest / HRCT ───────────────────────────────────────────
-            {
-                "aliases": [
-                    "ct chest", "ct scan chest", "hrct chest",
-                    "hrct thorax", "high resolution ct chest",
-                    "high resolution ct thorax",
-                ],
-                "procedure": "CT Chest / HRCT Thorax",
-                "non_nabh": 3500, "nabh": 4000, "confidence": 95,
-            },
-
-            # ── X-Ray ─────────────────────────────────────────────────────
-            {
-                "aliases": [
-                    "chest xray", "chest x-ray", "x-ray chest",
-                    "xray chest", "chest x ray pa view",
-                    "chest xray pa", "x-ray chest pa view",
-                    "chest pa view", "x-ray chest pa",
-                ],
-                "procedure": "X-Ray Chest PA View",
-                "non_nabh": 150, "nabh": 175, "confidence": 98,
-            },
-
-            # ── MRI Brain ─────────────────────────────────────────────────
-            {
-                "aliases": ["mri brain", "mri head", "mri brain plain"],
-                "procedure": "MRI Brain Plain",
-                "non_nabh": 5500, "nabh": 6500, "confidence": 97,
-            },
-
-            # ── MRI Spine ─────────────────────────────────────────────────
-            {
-                "aliases": [
-                    "mri spine", "mri lumbar spine",
-                    "mri cervical spine", "mri thoracic spine",
-                    "mri ls spine",
-                ],
-                "procedure": "MRI Spine (per region)",
-                "non_nabh": 5500, "nabh": 6500, "confidence": 95,
-            },
-
-            # ── ECG ───────────────────────────────────────────────────────
-            {
-                "aliases": [
-                    "ecg", "electrocardiogram", "ecg 12 lead",
-                    "12 lead ecg", "ecg - 12 lead", "ecg/ekg",
-                ],
-                "procedure": "ECG",
-                "non_nabh": 150, "nabh": 175, "confidence": 100,
-            },
-
-            # ── 2D Echo / Echocardiography ────────────────────────────────
-            {
-                "aliases": [
-                    "2d echo", "2d echocardiography", "echocardiography",
-                    "echo cardiography", "cardiac echo", "echo",
-                ],
-                "procedure": "2D Echocardiography",
-                "non_nabh": 1200, "nabh": 1400, "confidence": 95,
-            },
-
-            # ── Surgery packages ──────────────────────────────────────────
-            {
-                "aliases": [
-                    "laparoscopic appendectomy",
-                    "laparoscopic appendectomy package",
-                    "lap appendectomy", "laparoscopic appendicectomy",
-                    "laparoscopic appendicectomy package",
-                ],
-                "procedure": "Laparoscopic Appendicectomy",
-                "non_nabh": 25500, "nabh": 30000, "confidence": 97,
-            },
-            {
-                "aliases": [
-                    "laparoscopic cholecystectomy",
-                    "lap cholecystectomy",
-                    "laparoscopic cholecystectomy package",
-                ],
-                "procedure": "Laparoscopic Cholecystectomy",
-                "non_nabh": 22000, "nabh": 26000, "confidence": 97,
-            },
-
-            # ── Pathology ─────────────────────────────────────────────────
-            {
-                "aliases": [
-                    "cbc", "complete blood count",
-                    "complete blood picture", "cbp", "haemogram", "hemogram",
-                ],
-                "procedure": "Complete Blood Count (CBC)",
-                "non_nabh": 120, "nabh": 140, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "lft", "liver function test", "liver function tests",
-                    "liver function",
-                ],
-                "procedure": "Liver Function Tests (LFT)",
-                "non_nabh": 350, "nabh": 400, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "kft", "rft", "kidney function test",
-                    "renal function test", "kidney function tests",
-                    "renal function tests",
-                ],
-                "procedure": "Renal Function Tests (KFT/RFT)",
-                "non_nabh": 300, "nabh": 350, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "blood sugar random", "bsr",
-                    "blood glucose random", "random blood sugar",
-                    "blood sugar - random", "rbs",
-                ],
-                "procedure": "Blood Sugar (Random)",
-                "non_nabh": 60, "nabh": 70, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "blood sugar fasting", "bsf",
-                    "fasting blood sugar", "fasting glucose",
-                    "blood sugar - fasting",
-                ],
-                "procedure": "Blood Sugar (Fasting)",
-                "non_nabh": 60, "nabh": 70, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "urine routine", "urine r/e", "urine examination",
-                    "urinalysis", "urine routine examination",
-                    "urine routine and microscopy", "urine r/m",
-                ],
-                "procedure": "Urine Routine & Microscopy",
-                "non_nabh": 80, "nabh": 100, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "serum creatinine", "s. creatinine", "sr. creatinine",
-                    "creatinine",
-                ],
-                "procedure": "Serum Creatinine",
-                "non_nabh": 80, "nabh": 100, "confidence": 98,
-            },
-            {
-                "aliases": [
-                    "tsh", "thyroid stimulating hormone",
-                    "t3 t4 tsh", "thyroid profile", "thyroid function test",
-                    "thyroid function tests",
-                ],
-                "procedure": "Thyroid Function Tests (T3, T4, TSH)",
-                "non_nabh": 350, "nabh": 400, "confidence": 97,
-            },
-            {
-                "aliases": [
-                    "pt/inr", "pt inr", "prothrombin time",
-                    "prothrombin time inr",
-                ],
-                "procedure": "PT/INR",
-                "non_nabh": 120, "nabh": 140, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "aptt", "activated partial thromboplastin time",
-                    "partial thromboplastin time",
-                ],
-                "procedure": "APTT",
-                "non_nabh": 120, "nabh": 140, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "coagulation profile", "coagulation screen",
-                    "clotting profile",
-                ],
-                "procedure": "Coagulation Profile",
-                "non_nabh": 300, "nabh": 350, "confidence": 95,
-            },
-            {
-                "aliases": [
-                    "lipid profile", "cholesterol profile",
-                    "lipid panel",
-                ],
-                "procedure": "Lipid Profile",
-                "non_nabh": 280, "nabh": 320, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "hba1c", "glycated haemoglobin", "glycated hemoglobin",
-                    "glycosylated haemoglobin",
-                ],
-                "procedure": "HbA1c",
-                "non_nabh": 300, "nabh": 350, "confidence": 100,
-            },
-
-            # ── Misc procedures ───────────────────────────────────────────
-            {
-                "aliases": ["blood transfusion"],
-                "procedure": "Blood Transfusion",
-                "non_nabh": 1000, "nabh": 1000, "confidence": 100,
-            },
-            {
-                "aliases": ["nebulization", "nebulisation", "nebulizer treatment"],
-                "procedure": "Nebulization",
-                "non_nabh": 100, "nabh": 100, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "injection charge", "injection administration",
-                    "inj administration fee", "injection charges",
-                ],
-                "procedure": "Injection Administration",
-                "non_nabh": 50, "nabh": 50, "confidence": 100,
-            },
-            {
-                "aliases": [
-                    "physiotherapy", "physio session",
-                    "physiotherapy session", "physiotherapy charges",
-                ],
-                "procedure": "Physiotherapy Session",
-                "non_nabh": 500, "nabh": 600, "confidence": 95,
-            },
-            {
-                "aliases": [
-                    "dietician", "dietitian",
-                    "diet consultation", "nutrition consultation",
-                    "dietician consultation",
-                ],
-                "procedure": "Dietician Consultation",
-                "non_nabh": 300, "nabh": 350, "confidence": 90,
-            },
-            {
-                "aliases": [
-                    "dressing", "wound dressing", "dressing charges",
-                    "wound care",
-                ],
-                "procedure": "Wound Dressing",
-                "non_nabh": 150, "nabh": 175, "confidence": 90,
-            },
-        ]
 
         # Build alias → override dict (lowercase keys)
+
         # Apply _normalize_description to alias keys so they match
         # normalized billing descriptions at lookup time.
         self.manual_overrides: Dict[str, dict] = {}
@@ -706,6 +332,56 @@ class SemanticRateValidator:
         # Cache populated by _batch_llm_rerank before violation loop
         self._llm_cache: Dict[str, Optional[dict]] = {}
 
+
+    # ──────────────────────────────────────────────────────────────────────
+    # Built-in fallback override table (used if manual_overrides.json is missing)
+    # ──────────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _builtin_overrides() -> List[dict]:
+        """Return the built-in manual override list (fallback when JSON file is absent)."""
+        return [
+            {"aliases": ["consultation","opd","doctor visit","professional fee","doctor fee","specialist consultation","physician fee"],"procedure":"Consultation OPD","non_nabh":350,"nabh":350,"confidence":100},
+            {"aliases": ["general ward","ward charges","bed charges","room rent","accommodation charges","room charges","bed rent","single room","twin sharing room","twin sharing","deluxe room","semi private room","private room","shared room","room and board","room rent per day","bed rent per day","semi-private room","semi private ac room"],"procedure":"General Ward (per day)","non_nabh":1500,"nabh":1500,"confidence":95},
+            {"aliases": ["hdu","high dependency unit","step down unit","step-down unit","high dependency care","hdu charges","high dependency unit charges"],"procedure":"HDU / Step-down Care","non_nabh":2800,"nabh":3200,"confidence":92},
+            {"aliases": ["recovery room charges","recovery room","post anesthesia care unit","post anaesthesia care unit","pacu","post anesthesia care","post anaesthesia care","post-op observation","post op observation","post operative observation","post-operative observation"],"procedure":"Post-operative Recovery / PACU","non_nabh":2800,"nabh":3200,"confidence":88},
+            {"aliases": ["icu charges","icu","intensive care unit","intensive care charges","critical care unit","icu bed charges","icu room charges","critical care charges","intensive care unit charges","icu charges (post-op observation)","icu (post-op observation)","icu post op","icu post-op","post op icu charges","post-op icu charges","icu charges post operative","icu charges post op observation"],"procedure":"ICU Including Room Rent","non_nabh":4590,"nabh":5400,"confidence":97},
+            {"aliases": ["nicu","neonatal icu","neonatal intensive care","newborn icu","neonatal intensive care unit"],"procedure":"NICU (per day)","non_nabh":3500,"nabh":4000,"confidence":95},
+            {"aliases": ["laparoscopic appendectomy","laparoscopic appendectomy package","lap appendectomy","laparoscopic appendicectomy","laparoscopic appendicectomy package","appendectomy package"],"procedure":"Laparoscopic Appendicectomy","non_nabh":25500,"nabh":30000,"confidence":97},
+            {"aliases": ["laparoscopic cholecystectomy","lap cholecystectomy","laparoscopic cholecystectomy package"],"procedure":"Laparoscopic Cholecystectomy","non_nabh":22000,"nabh":26000,"confidence":97},
+            {"aliases": ["usg abdomen & pelvis","usg abdomen and pelvis","usg abdomen pelvis","ultrasound abdomen pelvis","ultrasound abdomen and pelvis","sonography abdomen pelvis","usg abdomen & pelvis with doppler","ultrasound abdomen and pelvis with doppler"],"procedure":"USG Abdomen & Pelvis","non_nabh":1350,"nabh":1600,"confidence":98},
+            {"aliases": ["usg abdomen","ultrasound abdomen","sonography abdomen","usg whole abdomen","ultrasound whole abdomen"],"procedure":"USG Whole Abdomen","non_nabh":1200,"nabh":1400,"confidence":95},
+            {"aliases": ["usg kub","ultrasound kub","usg kidney ureter bladder","usg whole abdomen kub","usg abdomen kub","usg whole abdomen / kub"],"procedure":"USG KUB Including PVR","non_nabh":680,"nabh":800,"confidence":98},
+            {"aliases": ["usg pelvis","ultrasound pelvis","usg lower abdomen","sonography pelvis"],"procedure":"USG Pelvis","non_nabh":800,"nabh":950,"confidence":95},
+            {"aliases": ["ct scan abdomen contrast","ct abdomen contrast","ct whole abdomen with contrast","cect abdomen","ct scan abdomen (contrast)","ct abdomen with contrast","ct scan with contrast abdomen","contrast ct abdomen","ct scan whole abdomen contrast","ct scan abdomen (contrast enhanced)"],"procedure":"CT Scan Whole Abdomen With Contrast","non_nabh":4500,"nabh":5200,"confidence":98},
+            {"aliases": ["ct scan abdomen","ct abdomen plain","ct abdomen without contrast","ct scan abdomen plain","nect abdomen"],"procedure":"CT Scan Whole Abdomen Plain","non_nabh":3000,"nabh":3500,"confidence":95},
+            {"aliases": ["ct chest","ct scan chest","hrct chest","hrct thorax","high resolution ct chest","high resolution ct thorax"],"procedure":"CT Chest / HRCT Thorax","non_nabh":3500,"nabh":4000,"confidence":95},
+            {"aliases": ["chest xray","chest x-ray","x-ray chest","xray chest","chest x ray pa view","chest xray pa","x-ray chest pa view","chest pa view","x-ray chest pa"],"procedure":"X-Ray Chest PA View","non_nabh":150,"nabh":175,"confidence":98},
+            {"aliases": ["mri brain","mri head","mri brain plain"],"procedure":"MRI Brain Plain","non_nabh":5500,"nabh":6500,"confidence":97},
+            {"aliases": ["mri spine","mri lumbar spine","mri cervical spine","mri thoracic spine","mri ls spine"],"procedure":"MRI Spine (per region)","non_nabh":5500,"nabh":6500,"confidence":95},
+            {"aliases": ["ecg","electrocardiogram","ecg 12 lead","12 lead ecg","ecg - 12 lead","ecg/ekg"],"procedure":"ECG","non_nabh":150,"nabh":175,"confidence":100},
+            {"aliases": ["2d echo","2d echocardiography","echocardiography","echo cardiography","cardiac echo","echo"],"procedure":"2D Echocardiography","non_nabh":1200,"nabh":1400,"confidence":95},
+            {"aliases": ["cbc","complete blood count","complete blood picture","cbp","haemogram","hemogram"],"procedure":"Complete Blood Count (CBC)","non_nabh":120,"nabh":140,"confidence":100},
+            {"aliases": ["lft","liver function test","liver function tests","liver function"],"procedure":"Liver Function Tests (LFT)","non_nabh":350,"nabh":400,"confidence":100},
+            {"aliases": ["kft","rft","kidney function test","renal function test","kidney function tests","renal function tests"],"procedure":"Renal Function Tests (KFT/RFT)","non_nabh":300,"nabh":350,"confidence":100},
+            {"aliases": ["blood sugar random","bsr","blood glucose random","random blood sugar","blood sugar - random","rbs"],"procedure":"Blood Sugar (Random)","non_nabh":60,"nabh":70,"confidence":100},
+            {"aliases": ["blood sugar fasting","bsf","fasting blood sugar","fasting glucose","blood sugar - fasting"],"procedure":"Blood Sugar (Fasting)","non_nabh":60,"nabh":70,"confidence":100},
+            {"aliases": ["urine routine","urine r/e","urine examination","urinalysis","urine routine examination","urine routine and microscopy","urine r/m"],"procedure":"Urine Routine & Microscopy","non_nabh":80,"nabh":100,"confidence":100},
+            {"aliases": ["serum creatinine","s. creatinine","sr. creatinine","creatinine"],"procedure":"Serum Creatinine","non_nabh":80,"nabh":100,"confidence":98},
+            {"aliases": ["tsh","thyroid stimulating hormone","t3 t4 tsh","thyroid profile","thyroid function test","thyroid function tests"],"procedure":"Thyroid Function Tests (T3, T4, TSH)","non_nabh":350,"nabh":400,"confidence":97},
+            {"aliases": ["pt/inr","pt inr","prothrombin time","prothrombin time inr"],"procedure":"PT/INR","non_nabh":120,"nabh":140,"confidence":100},
+            {"aliases": ["aptt","activated partial thromboplastin time","partial thromboplastin time"],"procedure":"APTT","non_nabh":120,"nabh":140,"confidence":100},
+            {"aliases": ["coagulation profile","coagulation screen","clotting profile"],"procedure":"Coagulation Profile","non_nabh":300,"nabh":350,"confidence":95},
+            {"aliases": ["lipid profile","cholesterol profile","lipid panel"],"procedure":"Lipid Profile","non_nabh":280,"nabh":320,"confidence":100},
+            {"aliases": ["hba1c","glycated haemoglobin","glycated hemoglobin","glycosylated haemoglobin"],"procedure":"HbA1c","non_nabh":300,"nabh":350,"confidence":100},
+            {"aliases": ["blood transfusion"],"procedure":"Blood Transfusion","non_nabh":1000,"nabh":1000,"confidence":100},
+            {"aliases": ["nebulization","nebulisation","nebulizer treatment"],"procedure":"Nebulization","non_nabh":100,"nabh":100,"confidence":100},
+            {"aliases": ["injection charge","injection administration","inj administration fee","injection charges"],"procedure":"Injection Administration","non_nabh":50,"nabh":50,"confidence":100},
+            {"aliases": ["physiotherapy","physio session","physiotherapy session","physiotherapy charges"],"procedure":"Physiotherapy Session","non_nabh":500,"nabh":600,"confidence":95},
+            {"aliases": ["dietician","dietitian","diet consultation","nutrition consultation","dietician consultation"],"procedure":"Dietician Consultation","non_nabh":300,"nabh":350,"confidence":90},
+            {"aliases": ["dressing","wound dressing","dressing charges","wound care"],"procedure":"Wound Dressing","non_nabh":150,"nabh":175,"confidence":90},
+        ]
+
     # ──────────────────────────────────────────────────────────────────────
     # Public API
     # ──────────────────────────────────────────────────────────────────────
@@ -723,7 +399,7 @@ class SemanticRateValidator:
         """
         if not item_description:
             return (None, None, 0.0)
-
+        
         item_lower = item_description.lower().strip()
         item_normalized = _normalize_description(item_lower)
 
@@ -802,10 +478,23 @@ class SemanticRateValidator:
             if is_cghs:
                 if confidence < self.VIOLATION_MIN_CONFIDENCE:
                     continue
+
                 v_type      = ViolationType.PACKAGE_RATE_VIOLATION
-                severity    = Severity.HIGH if deviation > 20 else Severity.MEDIUM
-                legal_ref   = "CGHS Package Rate Guidelines"
                 enforceable = True
+                legal_ref   = "CGHS Package Rate Guidelines"
+
+                # ── Confidence-aware severity ────────────────────────────
+                # High confidence (≥80%): trust the match fully.
+                #   HIGH if deviation > 20%, MEDIUM otherwise.
+                # Disputed zone (65–79%): match is plausible but the semantic
+                #   model is not certain enough to levy a hard accusation.
+                #   Cap at MEDIUM regardless of deviation, and flag it.
+                if confidence >= self.VIOLATION_DISPUTED_CONFIDENCE:
+                    severity = Severity.HIGH if deviation > 20 else Severity.MEDIUM
+                    dispute_note = ""
+                else:
+                    severity = Severity.MEDIUM          # never HIGH for uncertain matches
+                    dispute_note = " — match confidence is borderline; hospital may dispute this comparison"
             else:
                 if confidence < self.INFO_MIN_CONFIDENCE:
                     continue
@@ -815,15 +504,17 @@ class SemanticRateValidator:
                 severity    = Severity.INFO
                 legal_ref   = "Informational — hospital not CGHS-empanelled"
                 enforceable = False
+                dispute_note = ""
 
             violations.append(
                 Violation(
                     type=v_type,
                     severity=severity,
                     description=(
-                        f"Exceeds CGHS rate by {deviation:.1f}% "
+                        f"Exceeds CGHS reference by {deviation:.1f}% "
                         f"(matched: '{matched_proc}', "
                         f"confidence: {confidence:.0f}%)"
+                        f"{dispute_note}"
                     ),
                     item=item.description,
                     charged_amount=charged,
@@ -897,18 +588,26 @@ class SemanticRateValidator:
         """
         # (a) Exact match
         if item_lower in self.manual_overrides:
-            return self.manual_overrides[item_lower]
+            match = self.manual_overrides[item_lower]
+            logger.info(f"[OVERRIDE] Exact match found for '{item_lower}' -> {match.get('procedure')} (₹{match.get('non_nabh')})")
+            return dict(match, matched_alias=item_lower)
 
         # (b) Longest word-bounded substring match
         best_alias: Optional[str] = None
         for alias in self.manual_overrides:
-            # Use \w word boundary — safer than [a-z] which misses digits/hyphens
-            pattern = r"(?<!\w)" + re.escape(alias) + r"(?!\w)"
+            # Word boundary regex ensuring we only match whole phrases
+            pattern = r"(?<![a-z0-9])" + re.escape(alias) + r"(?![a-z0-9])"
             if re.search(pattern, item_lower):
                 if best_alias is None or len(alias) > len(best_alias):
                     best_alias = alias
 
-        return self.manual_overrides[best_alias] if best_alias else None
+        if best_alias:
+            match = self.manual_overrides[best_alias]
+            logger.info(f"[OVERRIDE] Substring match found: '{best_alias}' in '{item_lower}' -> {match.get('procedure')} (₹{match.get('non_nabh')})")
+            return dict(match, matched_alias=best_alias)
+
+        logger.debug(f"[OVERRIDE] Skipped: No manual override matched for '{item_lower}'")
+        return None
 
     def _semantic_match(
         self,
@@ -972,7 +671,7 @@ class SemanticRateValidator:
             )
             traceback.print_exc()
             return self._fuzzy_match(item_description, nabh_status)
-
+    
     def _get_top_k_candidates(
         self,
         item_embedding: np.ndarray,
@@ -1214,29 +913,29 @@ class SemanticRateValidator:
         item_lower = item_description.lower().strip()
         best_match: Optional[dict] = None
         best_score = 0
-
+        
         for rate_entry in self.rates_db:
             proc = rate_entry.get("procedure", "")
             if not proc:
                 continue
             proc_lower = proc.lower()
-
+            
             if item_lower == proc_lower:
                 best_match = rate_entry
                 best_score = 100
                 break
-
+            
             if item_lower in proc_lower:
                 score = 90
             elif proc_lower in item_lower:
                 score = 85
             else:
                 score = fuzz.token_sort_ratio(item_lower, proc_lower)
-
+            
             if score > best_score and score >= 70:
                 best_score = score
                 best_match = rate_entry
-
+        
         if best_match and best_score >= 70:
             rate_key = (
                 "nabh_rate" if nabh_status == "NABH/ NABL"
@@ -1282,7 +981,7 @@ class SemanticRateValidator:
         total = _safe_float(item.total_price)
         if total is None:
             return None
-
+        
         if _is_per_day_item(item.description):
             # Style A: quantity explicitly > 1
             qty = _safe_float(item.quantity) if item.quantity else None

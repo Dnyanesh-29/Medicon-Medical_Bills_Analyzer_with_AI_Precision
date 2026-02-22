@@ -1,0 +1,612 @@
+[
+  {
+    "_comment": "=== ROOM — General Ward (cghs_rates.json: New room Rent General Ward) ===",
+    "aliases": [
+      "general ward",
+      "ward charges",
+      "bed charges",
+      "room rent",
+      "accommodation charges",
+      "room charges",
+      "bed rent",
+      "bed charges per day",
+      "single room",
+      "twin sharing room",
+      "twin sharing",
+      "shared room",
+      "room and board",
+      "room rent per day",
+      "bed rent per day",
+      "general ward (per day)"
+    ],
+    "procedure": "New room Rent (General Ward w.e.f 12/4/2023)",
+    "non_nabh": 1500,
+    "nabh": 1500,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== ROOM — Semi Pvt (cghs_rates.json: New room Rent Semi Pvt Ward) ===",
+    "aliases": [
+      "semi private room",
+      "semi-private room",
+      "semi private ac room",
+      "semi-private ac room",
+      "semi private ac room - per day",
+      "semi-private ac room - per day",
+      "deluxe room",
+      "semi pvt ward",
+      "semi pvt"
+    ],
+    "procedure": "New room Rent (Semi Pvt Ward w.e.f 12/4/2023)",
+    "non_nabh": 3000,
+    "nabh": 3000,
+    "confidence": 97
+  },
+  {
+    "_comment": "=== ROOM — Private Ward (cghs_rates.json) ===",
+    "aliases": [
+      "private room",
+      "private ward",
+      "private room per day"
+    ],
+    "procedure": "New room Rent (Private Ward w.e.f 12/4/2023)",
+    "non_nabh": 4500,
+    "nabh": 4500,
+    "confidence": 97
+  },
+  {
+    "_comment": "=== ICU (cghs_rates.json: ICU INCLUDING ROOM RENT) ===",
+    "aliases": [
+      "icu charges",
+      "icu",
+      "intensive care unit",
+      "intensive care charges",
+      "critical care unit",
+      "icu bed charges",
+      "icu room charges",
+      "critical care charges",
+      "intensive care unit charges",
+      "icu charges (post-op observation)",
+      "icu (post-op observation)",
+      "icu post op",
+      "icu post-op",
+      "post op icu charges",
+      "post-op icu charges",
+      "icu charges post operative",
+      "icu charges post op observation"
+    ],
+    "procedure": "ICU INCLUDING ROOM RENT (w.e.f 12/4/2023)",
+    "non_nabh": 4590,
+    "nabh": 5400,
+    "confidence": 97
+  },
+  {
+    "_comment": "=== HDU / Step-down ===",
+    "aliases": [
+      "hdu",
+      "high dependency unit",
+      "step down unit",
+      "step-down unit",
+      "high dependency care",
+      "hdu charges",
+      "high dependency unit charges"
+    ],
+    "procedure": "HDU / Step-down Care",
+    "non_nabh": 2800,
+    "nabh": 3200,
+    "confidence": 92
+  },
+  {
+    "_comment": "=== Recovery / PACU ===",
+    "aliases": [
+      "recovery room charges",
+      "recovery room",
+      "post anesthesia care unit",
+      "post anaesthesia care unit",
+      "pacu",
+      "post anesthesia care",
+      "post anaesthesia care",
+      "post-op observation",
+      "post op observation",
+      "post operative observation",
+      "post-operative observation"
+    ],
+    "procedure": "Post-operative Recovery / PACU",
+    "non_nabh": 2800,
+    "nabh": 3200,
+    "confidence": 88
+  },
+  {
+    "_comment": "=== NICU ===",
+    "aliases": [
+      "nicu",
+      "neonatal icu",
+      "neonatal intensive care",
+      "newborn icu",
+      "neonatal intensive care unit"
+    ],
+    "procedure": "Neonatal ICU charges (Per day)",
+    "non_nabh": 391,
+    "nabh": 450,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== OPD / Consultation (cghs_rates.json) ===",
+    "aliases": [
+      "consultation",
+      "opd",
+      "doctor visit",
+      "professional fee",
+      "doctor fee",
+      "specialist consultation",
+      "physician fee",
+      "specialist fee"
+    ],
+    "procedure": "Consultation OPD (w.e.f 12/4/2023)",
+    "non_nabh": 350,
+    "nabh": 350,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Laparoscopic Appendectomy (cghs_rates.json: Laparoscopic Appedicectomy) ===",
+    "aliases": [
+      "laparoscopic appendectomy",
+      "laparoscopic appendectomy package",
+      "lap appendectomy",
+      "laparoscopic appendicectomy",
+      "laparoscopic appendicectomy package",
+      "appendectomy package",
+      "appendicectomy package"
+    ],
+    "procedure": "Laparoscopic Appedicectomy",
+    "non_nabh": 25500,
+    "nabh": 30000,
+    "confidence": 97
+  },
+  {
+    "_comment": "=== Laparoscopic Cholecystectomy (cghs_rates.json) ===",
+    "aliases": [
+      "laparoscopic cholecystectomy",
+      "lap cholecystectomy",
+      "laparoscopic cholecystectomy package"
+    ],
+    "procedure": "Laparoscopic Cholecystetomy",
+    "non_nabh": 28050,
+    "nabh": 33000,
+    "confidence": 97
+  },
+  {
+    "_comment": "=== USG Abdomen & Pelvis ===",
+    "aliases": [
+      "usg abdomen and pelvis",
+      "usg abdomen & pelvis",
+      "usg abdomen pelvis",
+      "ultrasound abdomen pelvis",
+      "ultrasound abdomen and pelvis",
+      "sonography abdomen pelvis",
+      "usg abdomen & pelvis with doppler",
+      "ultrasound abdomen and pelvis with doppler"
+    ],
+    "procedure": "USG Abdomen & Pelvis",
+    "non_nabh": 1350,
+    "nabh": 1550,
+    "confidence": 98
+  },
+  {
+    "_comment": "=== USG Whole Abdomen only (cghs_rates.json same procedure) ===",
+    "aliases": [
+      "usg abdomen",
+      "ultrasound abdomen",
+      "sonography abdomen",
+      "usg whole abdomen",
+      "ultrasound whole abdomen"
+    ],
+    "procedure": "USG Whole Abdomen / KUB - Including Post void residual (PVR)",
+    "non_nabh": 680,
+    "nabh": 800,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== USG KUB ===",
+    "aliases": [
+      "usg kub",
+      "ultrasound kub",
+      "usg kidney ureter bladder",
+      "usg whole abdomen kub",
+      "usg abdomen kub",
+      "usg whole abdomen / kub"
+    ],
+    "procedure": "USG Whole Abdomen / KUB - Including Post void residual (PVR)",
+    "non_nabh": 680,
+    "nabh": 800,
+    "confidence": 98
+  },
+  {
+    "_comment": "=== USG Pelvis (cghs_rates.json) ===",
+    "aliases": [
+      "usg pelvis",
+      "ultrasound pelvis",
+      "usg lower abdomen",
+      "sonography pelvis"
+    ],
+    "procedure": "Pelvic USG (gynae, infertility , prostate, With post void residual PVR etc.)",
+    "non_nabh": 425,
+    "nabh": 500,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== CT Scan Whole Abdomen With Contrast (cghs_rates.json) ===",
+    "aliases": [
+      "ct scan abdomen contrast",
+      "ct abdomen contrast",
+      "ct whole abdomen with contrast",
+      "cect abdomen",
+      "ct scan abdomen (contrast)",
+      "ct abdomen with contrast",
+      "ct scan with contrast abdomen",
+      "contrast ct abdomen",
+      "ct scan whole abdomen contrast",
+      "ct scan abdomen (contrast enhanced)"
+    ],
+    "procedure": "CT Scan Whole Abdomen With Contrast",
+    "non_nabh": 4500,
+    "nabh": 5175,
+    "confidence": 98
+  },
+  {
+    "_comment": "=== CT Scan Whole Abdomen Plain (cghs_rates.json) ===",
+    "aliases": [
+      "ct scan abdomen",
+      "ct abdomen plain",
+      "ct abdomen without contrast",
+      "ct scan abdomen plain",
+      "nect abdomen"
+    ],
+    "procedure": "CT Scan Whole Abdomen Without Contrast",
+    "non_nabh": 3000,
+    "nabh": 3450,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== CT Chest / HRCT ===",
+    "aliases": [
+      "ct chest",
+      "ct scan chest",
+      "hrct chest",
+      "hrct thorax",
+      "high resolution ct chest",
+      "high resolution ct thorax"
+    ],
+    "procedure": "CT Chest / HRCT Thorax",
+    "non_nabh": 3500,
+    "nabh": 4000,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== X-Ray Chest PA ===",
+    "aliases": [
+      "chest xray",
+      "chest x-ray",
+      "x-ray chest",
+      "xray chest",
+      "chest x ray pa view",
+      "chest xray pa",
+      "x-ray chest pa view",
+      "chest pa view",
+      "x-ray chest pa"
+    ],
+    "procedure": "X-Ray Chest PA View",
+    "non_nabh": 150,
+    "nabh": 175,
+    "confidence": 98
+  },
+  {
+    "_comment": "=== MRI Brain ===",
+    "aliases": [
+      "mri brain",
+      "mri head",
+      "mri brain plain"
+    ],
+    "procedure": "MRI Brain Plain",
+    "non_nabh": 5500,
+    "nabh": 6500,
+    "confidence": 97
+  },
+  {
+    "_comment": "=== MRI Spine ===",
+    "aliases": [
+      "mri spine",
+      "mri lumbar spine",
+      "mri cervical spine",
+      "mri thoracic spine",
+      "mri ls spine"
+    ],
+    "procedure": "MRI Spine (per region)",
+    "non_nabh": 5500,
+    "nabh": 6500,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== ECG ===",
+    "aliases": [
+      "ecg",
+      "electrocardiogram",
+      "ecg 12 lead",
+      "12 lead ecg",
+      "ecg - 12 lead",
+      "ecg/ekg"
+    ],
+    "procedure": "ECG",
+    "non_nabh": 150,
+    "nabh": 175,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== 2D Echo ===",
+    "aliases": [
+      "2d echo",
+      "2d echocardiography",
+      "echocardiography",
+      "echo cardiography",
+      "cardiac echo",
+      "echo"
+    ],
+    "procedure": "2D Echocardiography",
+    "non_nabh": 1200,
+    "nabh": 1400,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== CBC / Haemogram ===",
+    "aliases": [
+      "cbc",
+      "complete blood count",
+      "complete blood picture",
+      "cbp",
+      "haemogram",
+      "hemogram"
+    ],
+    "procedure": "Complete Blood Count (CBC)",
+    "non_nabh": 120,
+    "nabh": 140,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== LFT ===",
+    "aliases": [
+      "lft",
+      "liver function test",
+      "liver function tests",
+      "liver function"
+    ],
+    "procedure": "Liver Function Tests (LFT)",
+    "non_nabh": 350,
+    "nabh": 400,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== KFT / RFT ===",
+    "aliases": [
+      "kft",
+      "rft",
+      "kidney function test",
+      "renal function test",
+      "kidney function tests",
+      "renal function tests"
+    ],
+    "procedure": "Renal Function Tests (KFT/RFT)",
+    "non_nabh": 300,
+    "nabh": 350,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Blood Sugar Random ===",
+    "aliases": [
+      "blood sugar random",
+      "bsr",
+      "blood glucose random",
+      "random blood sugar",
+      "blood sugar - random",
+      "rbs"
+    ],
+    "procedure": "Blood Sugar (Random)",
+    "non_nabh": 60,
+    "nabh": 70,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Blood Sugar Fasting ===",
+    "aliases": [
+      "blood sugar fasting",
+      "bsf",
+      "fasting blood sugar",
+      "fasting glucose",
+      "blood sugar - fasting"
+    ],
+    "procedure": "Blood Sugar (Fasting)",
+    "non_nabh": 60,
+    "nabh": 70,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Urine Routine ===",
+    "aliases": [
+      "urine routine",
+      "urine r/e",
+      "urine examination",
+      "urinalysis",
+      "urine routine examination",
+      "urine routine and microscopy",
+      "urine r/m"
+    ],
+    "procedure": "Urine Routine & Microscopy",
+    "non_nabh": 80,
+    "nabh": 100,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Serum Creatinine ===",
+    "aliases": [
+      "serum creatinine",
+      "s. creatinine",
+      "sr. creatinine",
+      "creatinine"
+    ],
+    "procedure": "Serum Creatinine",
+    "non_nabh": 80,
+    "nabh": 100,
+    "confidence": 98
+  },
+  {
+    "_comment": "=== Thyroid Profile ===",
+    "aliases": [
+      "tsh",
+      "thyroid stimulating hormone",
+      "t3 t4 tsh",
+      "thyroid profile",
+      "thyroid function test",
+      "thyroid function tests"
+    ],
+    "procedure": "Thyroid Function Tests (T3, T4, TSH)",
+    "non_nabh": 350,
+    "nabh": 400,
+    "confidence": 97
+  },
+  {
+    "_comment": "=== PT/INR ===",
+    "aliases": [
+      "pt/inr",
+      "pt inr",
+      "prothrombin time",
+      "prothrombin time inr"
+    ],
+    "procedure": "PT/INR",
+    "non_nabh": 120,
+    "nabh": 140,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== APTT ===",
+    "aliases": [
+      "aptt",
+      "activated partial thromboplastin time",
+      "partial thromboplastin time"
+    ],
+    "procedure": "APTT",
+    "non_nabh": 120,
+    "nabh": 140,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Coagulation Profile ===",
+    "aliases": [
+      "coagulation profile",
+      "coagulation screen",
+      "clotting profile"
+    ],
+    "procedure": "Coagulation Profile",
+    "non_nabh": 300,
+    "nabh": 350,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== Lipid Profile ===",
+    "aliases": [
+      "lipid profile",
+      "cholesterol profile",
+      "lipid panel"
+    ],
+    "procedure": "Lipid Profile",
+    "non_nabh": 280,
+    "nabh": 320,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== HbA1c ===",
+    "aliases": [
+      "hba1c",
+      "glycated haemoglobin",
+      "glycated hemoglobin",
+      "glycosylated haemoglobin"
+    ],
+    "procedure": "HbA1c",
+    "non_nabh": 300,
+    "nabh": 350,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Blood Transfusion ===",
+    "aliases": [
+      "blood transfusion"
+    ],
+    "procedure": "Blood Transfusion",
+    "non_nabh": 1000,
+    "nabh": 1000,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Nebulization ===",
+    "aliases": [
+      "nebulization",
+      "nebulisation",
+      "nebulizer treatment"
+    ],
+    "procedure": "Nebulization",
+    "non_nabh": 100,
+    "nabh": 100,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Injection Administration ===",
+    "aliases": [
+      "injection charge",
+      "injection administration",
+      "inj administration fee",
+      "injection charges"
+    ],
+    "procedure": "Injection Administration",
+    "non_nabh": 50,
+    "nabh": 50,
+    "confidence": 100
+  },
+  {
+    "_comment": "=== Physiotherapy ===",
+    "aliases": [
+      "physiotherapy",
+      "physio session",
+      "physiotherapy session",
+      "physiotherapy charges"
+    ],
+    "procedure": "Physiotherapy Session",
+    "non_nabh": 500,
+    "nabh": 600,
+    "confidence": 95
+  },
+  {
+    "_comment": "=== Wound Dressing (cghs_rates.json: Dressings of wounds) ===",
+    "aliases": [
+      "dressing",
+      "wound dressing",
+      "dressing charges",
+      "wound care"
+    ],
+    "procedure": "Dressings of wounds",
+    "non_nabh": 255,
+    "nabh": 300,
+    "confidence": 90
+  },
+  {
+    "_comment": "=== Dietician ===",
+    "aliases": [
+      "dietician",
+      "dietitian",
+      "diet consultation",
+      "nutrition consultation",
+      "dietician consultation"
+    ],
+    "procedure": "Dietician Consultation",
+    "non_nabh": 300,
+    "nabh": 350,
+    "confidence": 90
+  }
+]

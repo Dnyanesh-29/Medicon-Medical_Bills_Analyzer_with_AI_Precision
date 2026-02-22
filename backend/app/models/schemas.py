@@ -99,6 +99,14 @@ class InsuranceRisk(BaseModel):
     issues: List[str]
     recommendations: List[str]
 
+class QuantityAnomaly(BaseModel):
+    item: str
+    quantity_billed: float
+    stay_days: Optional[int] = None
+    expected_max: Optional[float] = None
+    severity: Severity
+    reason: str
+
 class BillAnalysisResult(BaseModel):
     hospital_name: str
     nabh_status: str
@@ -127,3 +135,5 @@ class BillAnalysisResult(BaseModel):
     # Timeline plausibility
     timeline_plausibility_score: int = 10  # 0–10
     timeline_conflicts: List[str] = Field(default_factory=list)
+    # Quantity anomaly detection
+    quantity_anomalies: List[QuantityAnomaly] = Field(default_factory=list)

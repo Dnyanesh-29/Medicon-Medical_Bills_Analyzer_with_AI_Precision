@@ -1,8 +1,9 @@
 
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from app.models.schemas import (
-    BillData, BillAnalysisResult, Violation, PriceComparison, 
-    ViolationType, Severity
+    BillData, BillAnalysisResult, Violation, PriceComparison,
+    ViolationType, Severity, QuantityAnomaly
 )
 from app.services.validator import SemanticRateValidator
 from app.services.ocr import GeminiStructurer
@@ -159,6 +160,9 @@ class BillAnalyzer:
         # Timeline plausibility
         timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data)
 
+        # Quantity anomaly detection
+        quantity_anomalies = self._detect_quantity_anomalies(bill_data)
+
         return BillAnalysisResult(
             hospital_name=bill_data.hospital_name,
             nabh_status=nabh_status,
@@ -182,6 +186,7 @@ class BillAnalyzer:
             timeline_conflicts=timeline_conflicts,
             total_overcharge=total_overcharge,
             document_inconsistency_details=doc_details,
+            quantity_anomalies=quantity_anomalies,
         )
     
     def _analyze_non_cghs_hospital(self, bill_data: BillData) -> BillAnalysisResult:
@@ -273,6 +278,9 @@ class BillAnalyzer:
         # Timeline plausibility
         timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data)
 
+        # Quantity anomaly detection
+        quantity_anomalies = self._detect_quantity_anomalies(bill_data)
+
         return BillAnalysisResult(
             hospital_name=bill_data.hospital_name,
             nabh_status="Not CGHS-empanelled",
@@ -296,7 +304,195 @@ class BillAnalyzer:
             timeline_conflicts=timeline_conflicts,
             total_overcharge=0.0,
             document_inconsistency_details=doc_details,
+            quantity_anomalies=quantity_anomalies,
         )
+
+    def _detect_quantity_anomalies(self, bill_data: BillData) -> List[QuantityAnomaly]:
+        """
+        Detects per-item quantity irregularities relative to hospital stay duration.
+        Applies a set of heuristics covering consumables, consultations, lab tests,
+        drugs, meals, and physiotherapy sessions.
+        """
+        anomalies: List[QuantityAnomaly] = []
+
+        # --- compute stay_days from dates ---
+        stay_days: Optional[int] = None
+        if bill_data.admission_date and bill_data.discharge_date:
+            try:
+                a = datetime.fromisoformat(bill_data.admission_date.split("T")[0])
+                d = datetime.fromisoformat(bill_data.discharge_date.split("T")[0])
+                diff = (d - a).days
+                stay_days = max(1, diff) if diff >= 0 else None
+            except Exception:
+                pass
+        # fallback: if no dates, treat everything as 1-day stay for relative checks
+        effective_days = stay_days if stay_days else 1
+
+        # ── Rule definitions ──────────────────────────────────────────────────
+        # Each rule: (keyword_list, max_per_day_multiplier, severity, reason_template)
+        #   max_abs: optional absolute cap regardless of stay length
+        #   max_per_day: relative to stay duration
+        CONSUMABLE_RULES = [
+            {
+                "keywords": ["mask", "face mask", "surgical mask", "n95"],
+                "max_per_day": 4,  # 4 masks per day is generous
+                "severity_thresholds": {"high": 10, "medium": 5},
+                "label": "mask",
+                "reason": "Surgical masks are typically changed 1-3 times per day per patient. {qty} masks for a {days}-day stay ({rate:.1f}/day) is unusually high.",
+            },
+            {
+                "keywords": ["glove", "latex glove", "examination glove"],
+                "max_per_day": 10,
+                "severity_thresholds": {"high": 30, "medium": 20},
+                "label": "gloves",
+                "reason": "{qty} gloves for a {days}-day stay ({rate:.1f}/day) is excessive. Normal usage is 4-8 pairs/day for a general ward patient.",
+            },
+            {
+                "keywords": ["syringe"],
+                "max_per_day": 8,
+                "severity_thresholds": {"high": 25, "medium": 12},
+                "label": "syringes",
+                "reason": "{qty} syringes over {days} days ({rate:.1f}/day). Unless patient is ICU/multi-IV, more than 8/day is questionable.",
+            },
+            {
+                "keywords": ["cannula", "iv cannula", "iv set", "iv line"],
+                "max_per_day": 2,
+                "severity_thresholds": {"high": 5, "medium": 3},
+                "label": "IV cannulas",
+                "reason": "{qty} IV cannulas over {days} days. Standard practice replaces cannula every 72 hrs; {rate:.1f}/day is an anomaly.",
+            },
+            {
+                "keywords": ["cotton", "gauze", "bandage"],
+                "max_per_day": 5,
+                "severity_thresholds": {"high": 20, "medium": 10},
+                "label": "dressing items",
+                "reason": "{qty} dressing/cotton units over {days} days ({rate:.1f}/day). Routine wound care uses 2-3 per day.",
+            },
+            {
+                "keywords": ["catheter", "foley", "urinary catheter"],
+                "max_per_day": 1,
+                "severity_thresholds": {"high": 3, "medium": 2},
+                "label": "catheters",
+                "reason": "{qty} catheters billed across {days} days. A catheter is a single-use device; more than 1-2 per stay warrants explanation.",
+            },
+            {
+                "keywords": ["diaper", "adult diaper"],
+                "max_per_day": 4,
+                "severity_thresholds": {"high": 15, "medium": 8},
+                "label": "diapers",
+                "reason": "{qty} adult diapers for {days} days ({rate:.1f}/day) is high unless intensive care; standard ward use is 2-3/day.",
+            },
+            {
+                "keywords": ["nebulizer", "nebulisation", "nebulization"],
+                "max_per_day": 4,
+                "severity_thresholds": {"high": 10, "medium": 6},
+                "label": "nebulization sessions",
+                "reason": "{qty} nebulization sessions over {days} days ({rate:.1f}/day). Respiratory protocol rarely exceeds 4 per day.",
+            },
+        ]
+
+        CONSULTATION_RULES = [
+            {
+                "keywords": ["consultation", "doctor visit", "visit charge", "physician fee"],
+                "max_per_day": 3,
+                "severity_thresholds": {"high": 5, "medium": 4},
+                "label": "daily consultations",
+                "reason": "{qty} consultation charges over {days} days ({rate:.1f}/day). CGHS caps one consultation per specialty per day; multiple daily consultations are a common padding tactic.",
+            },
+        ]
+
+        LAB_RULES = [
+            {
+                "keywords": ["cbc", "complete blood count", "blood count", "hemogram", "haemogram"],
+                "max_per_day_abs": 1,  # 1 CBC per day is the ceiling
+                "severity_thresholds": {"high": 3, "medium": 2},
+                "label": "CBC / blood count tests",
+                "reason": "{qty} CBC tests over {days} days. Repeated daily CBCs might be valid in ICU, but {qty} total is suspicious for a general ward admission.",
+            },
+            {
+                "keywords": ["x-ray", "xray", "chest xray", "x ray chest"],
+                "max_per_stay": 3,  # absolute cap
+                "severity_thresholds": {"high": 5, "medium": 3},
+                "label": "X-rays",
+                "reason": "{qty} X-rays billed during stay. Unless treating a fracture or acute respiratory condition, more than 2-3 X-rays is unusual.",
+            },
+        ]
+
+        MEAL_RULES = [
+            {
+                "keywords": ["diet charge", "meal charge", "food charge", "meal", "diet"],
+                "max_per_day": 3,
+                "severity_thresholds": {"high": 5, "medium": 4},
+                "label": "meal charges",
+                "reason": "{qty} meal charges for {days} days ({rate:.1f}/day). Standard is 3 meals/day; any excess is billing padding.",
+            },
+        ]
+
+        PHYSIO_RULES = [
+            {
+                "keywords": ["physiotherapy", "physio", "physio session"],
+                "max_per_day": 2,
+                "severity_thresholds": {"high": 3, "medium": 2},
+                "label": "physiotherapy sessions/day",
+                "reason": "{qty} physiotherapy sessions over {days} days ({rate:.1f}/day). More than 2 sessions/day is excessive ─ flag for review.",
+            },
+        ]
+
+        all_rules = CONSUMABLE_RULES + CONSULTATION_RULES + LAB_RULES + MEAL_RULES + PHYSIO_RULES
+
+        for item in bill_data.items:
+            name_lower = item.description.lower()
+            qty = item.quantity or 1.0
+
+            for rule in all_rules:
+                if not any(kw in name_lower for kw in rule["keywords"]):
+                    continue
+
+                high_thr = rule["severity_thresholds"]["high"]
+                med_thr  = rule["severity_thresholds"]["medium"]
+
+                # Determine effective threshold
+                if "max_per_stay" in rule:
+                    effective_max = rule["max_per_stay"]
+                elif "max_per_day_abs" in rule:
+                    effective_max = rule["max_per_day_abs"] * effective_days
+                elif "max_per_day" in rule:
+                    effective_max = rule["max_per_day"] * effective_days
+                else:
+                    effective_max = None
+
+                rate = qty / effective_days
+
+                if effective_max and qty <= effective_max:
+                    continue  # within normal range
+
+                # Determine severity by per-day rate, not absolute
+                per_day_rate = qty / effective_days
+                if per_day_rate >= high_thr:
+                    sev = Severity.HIGH
+                elif per_day_rate >= med_thr:
+                    sev = Severity.MEDIUM
+                else:
+                    sev = Severity.LOW
+
+                reason = rule["reason"].format(
+                    qty=int(qty),
+                    days=effective_days,
+                    rate=rate,
+                    stay_desc=f"{effective_days} day{'s' if effective_days != 1 else ''}"
+                )
+
+                anomalies.append(QuantityAnomaly(
+                    item=item.description,
+                    quantity_billed=qty,
+                    stay_days=stay_days,
+                    expected_max=effective_max,
+                    severity=sev,
+                    reason=reason,
+                ))
+                break  # one rule match per item is enough
+
+        return anomalies
 
     def _compute_timeline_score_and_conflicts(self, bill_data: BillData) -> tuple[int, list[str]]:
         """
@@ -361,23 +557,79 @@ class BillAnalyzer:
 
         if bill_data.items:
             items_sum = sum(item.total_price for item in bill_data.items)
+            n_items = len(bill_data.items)
             if bill_data.total_amount and items_sum > 0:
-                diff = abs(items_sum - bill_data.total_amount)
-                # Large mismatch between sum of items and total amount
-                if diff > 0.15 * bill_data.total_amount:
+                diff = bill_data.total_amount - items_sum  # signed: positive means total > items_sum
+                abs_diff = abs(diff)
+                gap_pct = (abs_diff / bill_data.total_amount) * 100
+
+                # Check if the gap is plausibly just GST (~5% on items_sum)
+                expected_gst_5pct  = items_sum * 0.05
+                expected_gst_18pct = items_sum * 0.18
+                actual_gap_pct_of_items = (abs_diff / items_sum) * 100
+
+                # Large gap (>15% of total) ─ almost certainly not just GST
+                if abs_diff > 0.15 * bill_data.total_amount:
                     doc_points = max(doc_points, 25)
-                    doc_details_msg = (
-                        f"Sum of itemized charges: ₹{items_sum:,.0f}\n"
-                        f"Total amount shown: ₹{bill_data.total_amount:,.0f}\n"
-                        f"Unexplained difference: ₹{diff:,.0f} (appears to be unlabeled GST)"
-                    )
-                elif diff > 0.08 * bill_data.total_amount:
+
+                    if actual_gap_pct_of_items <= 7:
+                        # Looks like ~5% GST
+                        doc_details_msg = (
+                            f"OCR extracted {n_items} line items totalling ₹{items_sum:,.0f}.\n"
+                            f"Actual bill total: ₹{bill_data.total_amount:,.0f}.\n"
+                            f"Gap: ₹{abs_diff:,.0f} ({gap_pct:.1f}% of total) — "
+                            f"consistent with 5% GST on itemized charges (expected ~₹{expected_gst_5pct:,.0f})."
+                        )
+                    else:
+                        # Gap is much larger than GST can account for
+                        likely_gst = round(items_sum * 0.05 / 100) * 100  # round to nearest ₹100
+                        likely_remaining = abs_diff - likely_gst
+
+                        causes = []
+                        if any(
+                            kw in item.description.lower()
+                            for item in bill_data.items
+                            for kw in ("pharmacy", "drug", "medicine", "tablet", "injection")
+                        ):
+                            causes.append("Additional pharmacy / medicine charges")
+                        causes.append("Consumables and surgical supplies billed separately")
+                        if likely_gst > 0:
+                            causes.append(f"GST at 5%  ≈ ₹{likely_gst:,.0f}")
+                        causes.append("Nursing / procedure fees not extracted by OCR")
+                        causes.append("Rounding and miscellaneous charges")
+
+                        causes_str = "\n  • ".join(causes)
+                        doc_details_msg = (
+                            f"OCR extracted {n_items} line items totalling ₹{items_sum:,.0f}.\n"
+                            f"Actual bill total: ₹{bill_data.total_amount:,.0f}.\n"
+                            f"Gap: ₹{abs_diff:,.0f} ({gap_pct:.1f}% of total).\n\n"
+                            f"A gap this large ({actual_gap_pct_of_items:.1f}% of extracted items) "
+                            f"is mathematically too big to be GST alone "
+                            f"(5% GST would only be ~₹{expected_gst_5pct:,.0f}).\n"
+                            f"Likely causes:\n  • {causes_str}\n\n"
+                            f"⚠ Request a complete itemized breakdown from the hospital to account "
+                            f"for all ₹{abs_diff:,.0f} in unlisted charges."
+                        )
+
+                # Moderate gap (8–15% of total) ─ might be GST + minor omissions
+                elif abs_diff > 0.08 * bill_data.total_amount:
                     doc_points = max(doc_points, 15)
-                    doc_details_msg = (
-                        f"Sum of itemized charges: ₹{items_sum:,.0f}\n"
-                        f"Total amount shown: ₹{bill_data.total_amount:,.0f}\n"
-                        f"Difference: ₹{diff:,.0f}"
-                    )
+                    if actual_gap_pct_of_items <= 7:
+                        doc_details_msg = (
+                            f"OCR extracted {n_items} line items totalling ₹{items_sum:,.0f}.\n"
+                            f"Actual bill total: ₹{bill_data.total_amount:,.0f}.\n"
+                            f"Gap: ₹{abs_diff:,.0f} ({gap_pct:.1f}% of total) — "
+                            f"likely 5% GST (~₹{expected_gst_5pct:,.0f}) plus minor unlisted charges."
+                        )
+                    else:
+                        doc_details_msg = (
+                            f"OCR extracted {n_items} line items totalling ₹{items_sum:,.0f}.\n"
+                            f"Actual bill total: ₹{bill_data.total_amount:,.0f}.\n"
+                            f"Gap: ₹{abs_diff:,.0f} ({gap_pct:.1f}% of total) — "
+                            f"some charges may not have been captured by OCR. "
+                            f"Request itemized bill to verify."
+                        )
+
         doc_points = min(30, doc_points)
 
         # CGHS violations (0–30): only fully weighted for CGHS hospitals
@@ -485,32 +737,35 @@ class BillAnalyzer:
         # Missing basic fields
         if not bill_data.bill_number:
             prob += 20
-            reasons.append("Bill number is missing on the invoice.")
+            reasons.append("Bill number is missing (+20% risk): Essential for claim tracking.")
         if not bill_data.bill_date:
             prob += 10
-            reasons.append("Bill date is missing.")
+            reasons.append("Bill date is missing (+10% risk): Prevents timeline verification.")
         if not bill_data.patient_name:
             prob += 8
-            reasons.append("Patient name is missing.")
+            reasons.append("Patient name is missing (+8% risk): Basic identity check failed.")
         if not bill_data.items:
             prob += 25
-            reasons.append("No itemized charges are present (insurers expect line items).")
+            reasons.append("No itemized charges (+25% risk): Insurers strictly reject aggregated lump-sums without line-item breakdowns.")
 
         # Severity of violations
         high_count = sum(1 for v in violations if v.severity == Severity.HIGH)
         medium_count = sum(1 for v in violations if v.severity == Severity.MEDIUM)
 
         if high_count:
-            prob += min(18, high_count * 6)
-            reasons.append("High-severity billing issues were detected.")
+            added_prob = min(18, high_count * 6)
+            prob += added_prob
+            reasons.append(f"High-severity billing issues (+{added_prob}% risk): Direct package rate violations or missing critical standards.")
         if medium_count:
-            prob += min(12, medium_count * 3)
-            reasons.append("Several medium-severity billing issues were detected.")
+            added_prob = min(12, medium_count * 3)
+            prob += added_prob
+            reasons.append(f"Medium-severity billing issues (+{added_prob}% risk): Non-compliance with expected billing norms.")
 
         # CGHS overcharge (for empanelled hospitals this is serious)
         if is_cghs and total_overcharge and total_overcharge > 0:
-            prob += min(18, (total_overcharge / 10000.0) * 8.0)
-            reasons.append("Total charges exceed CGHS package rates for this empanelled hospital.")
+            added_prob = min(18, (total_overcharge / 10000.0) * 8.0)
+            prob += added_prob
+            reasons.append(f"CGHS Overcharge (+{added_prob:.1f}% risk): Billed amount exceeds statutory limits for empanelled hospitals.")
 
         # Overall risk band
         if overall_risk == Severity.HIGH:
@@ -522,13 +777,12 @@ class BillAnalyzer:
         if bill_data.admission_date and bill_data.discharge_date:
             try:
                 from datetime import datetime
-
-                a = datetime.fromisoformat(bill_data.admission_date)
-                d = datetime.fromisoformat(bill_data.discharge_date)
+                a = datetime.fromisoformat(bill_data.admission_date.split("T")[0])
+                d = datetime.fromisoformat(bill_data.discharge_date.split("T")[0])
                 days = (d - a).days
                 if days > 15:
                     prob += 5
-                    reasons.append("Long hospital stay may trigger closer scrutiny from insurer.")
+                    reasons.append(f"Extended hospital stay ({days} days) (+5% risk): Automatically flags for closer manual scrutiny by TPA.")
             except Exception:
                 pass
 
