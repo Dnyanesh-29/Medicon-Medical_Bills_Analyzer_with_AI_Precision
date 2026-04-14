@@ -1,4 +1,3 @@
-
 import os
 import shutil
 import traceback
@@ -8,6 +7,7 @@ from typing import Optional, Dict
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
 from app.core.config import settings
 from app.models.schemas import HospitalSearchRequest, BillData
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     global hospital_service, bill_analyzer, hybrid_ocr
     
     print("\n" + "=" * 70)
-    print("🏥 Medical Bill Analyzer - Initializing Services")
+    print(" Medical Bill Analyzer - Initializing Services")
     print("=" * 70)
     
     # Initialize data services
@@ -36,12 +36,12 @@ async def lifespan(app: FastAPI):
         try:
             hospital_service = HospitalDiscoveryService(settings.HOSPITALS_JSON_PATH)
             bill_analyzer = BillAnalyzer(settings.RATES_JSON_PATH)
-            print("✓ Hospital and rate services initialized")
+            print("  Hospital and rate services initialized")
         except Exception as e:
-            print(f"❌ Failed to initialize data services: {e}")
+            print(f" Failed to initialize data services: {e}")
             traceback.print_exc()
     else:
-        print(f"❌ Missing data files configuration. Check .env or config.py")
+        print(f" Missing data files configuration. Check .env or config.py")
         print(f"Hospitals: {settings.HOSPITALS_JSON_PATH}")
         print(f"Rates: {settings.RATES_JSON_PATH}")
     
@@ -49,19 +49,19 @@ async def lifespan(app: FastAPI):
     if settings.is_ocr_configured:
         try:
             hybrid_ocr = HybridOCR()
-            print("✓ Hybrid OCR initialized (Google Vision + Gemini)")
+            print("  Hybrid OCR initialized (Google Vision + Gemini)")
         except Exception as e:
-            print(f"❌ OCR initialization failed: {e}")
+            print(f" OCR initialization failed: {e}")
             traceback.print_exc()
     else:
-        print(f"❌ OCR disabled. Missing API keys in .env")
+        print(f" OCR disabled. Missing API keys in .env")
     
     print("=" * 70)
     print()
     
     yield
     
-    print("\n🛑 Shutting down...")
+    print("\n Shutting down...")
 
 app = FastAPI(
     title="Medical Bill Analyzer API",
@@ -170,10 +170,10 @@ async def upload_and_analyze_bill(file: UploadFile = File(...)):
     temp_file = f"temp_upload_{os.urandom(8).hex()}{file_ext}"
     
     try:
-        print(f"\n📤 Processing upload: {file.filename}")
+        print(f"\n Processing upload: {file.filename}")
         with open(temp_file, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        print(f"   ✓ Saved to {temp_file}")
+        print(f"   Saved to {temp_file}")
         
         # Extract bill data
         try:
@@ -184,32 +184,41 @@ async def upload_and_analyze_bill(file: UploadFile = File(...)):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"OCR extraction failed: {str(e)}")
         
-        print(f"   ✓ Extracted bill: {bill_data.hospital_name}")
-        print(f"   ✓ Total amount: ₹{bill_data.total_amount:,.2f}")
-        print(f"   ✓ Items: {len(bill_data.items)}")
+        print(f"   Extracted bill: {bill_data.hospital_name}")
+        print(f"   Total amount: {bill_data.total_amount:,.2f}")
+        print(f"   Items: {len(bill_data.items)}")
         
         # Find hospital
         hospital = hospital_service.get_hospital_by_name(bill_data.hospital_name)
         
-        # Calculate match confidence
+        # Calculate match confidence — use token_set_ratio so a short name like
+        # "Sahyadri Hospital" correctly matches the long DB entry
+        # "SAHYADRI HOSPITALS LIMITED'S SAHYADRI SPECIALITY HOSPITAL"
         hospital_match_confidence = 0
         if hospital:
             from fuzzywuzzy import fuzz
-            hospital_match_confidence = fuzz.ratio(
-                bill_data.hospital_name.lower(), 
-                hospital.hospital_name.lower()
+            hospital_match_confidence = max(
+                fuzz.token_set_ratio(
+                    bill_data.hospital_name.lower(),
+                    hospital.hospital_name.lower()
+                ),
+                fuzz.partial_ratio(
+                    bill_data.hospital_name.lower(),
+                    hospital.hospital_name.lower()
+                ),
             )
         
-        # Stricter check: only consider it CGHS if confidence is high
-        is_cghs = hospital is not None and hospital_match_confidence >= 85
+        # Stricter check: only consider it CGHS if confidence is high enough.
+        # token_set_ratio handles short-name vs long-name well, so 75 is safe.
+        is_cghs = hospital is not None and hospital_match_confidence >= 75
         
         if not is_cghs:
              hospital = None # Reset if confidence is too low
 
         nabh_status = hospital.nabh_status if hospital else "Not CGHS-empanelled"
         
-        print(f"   {'✓' if is_cghs else '⚠️ '} Hospital match: {hospital.hospital_name if hospital else 'Not found in CGHS database'}")
-        print(f"   ℹ️  Status: {nabh_status}")
+        print(f"   Hospital match: {hospital.hospital_name if hospital else 'Not found in CGHS database'}")
+        print(f"   Status: {nabh_status}")
         
         # Analyze bill
         analysis = bill_analyzer.analyze_bill(
@@ -218,40 +227,51 @@ async def upload_and_analyze_bill(file: UploadFile = File(...)):
             is_cghs_hospital=is_cghs
         )
         
-        print(f"   ✓ Analysis complete")
-        print(f"   ✓ Risk level: {analysis.overall_risk}")
-        print(f"   ✓ Violations: {analysis.total_violations}")
+        print(f"   Analysis complete")
+        print(f"   Risk level: {analysis.overall_risk}")
+        print(f"   Violations: {analysis.total_violations}")
         
-        # Clean result for JSON
+        # ── Serialize response ────────────────────────────────────────────
+        # jsonable_encoder handles: Pydantic models, str-enums, numpy scalars,
+        # datetime, Decimal — anything Python's json module would choke on.
         result = {
             "success": True,
-            "extracted_bill_data": bill_data.model_dump(),
+            "extracted_bill_data": bill_data,
             "hospital_match": {
                 "found": is_cghs,
-                "hospital": hospital.model_dump() if hospital else None,
+                "hospital": hospital,
                 "match_confidence": hospital_match_confidence,
                 "nabh_status": nabh_status,
                 "is_cghs_empanelled": is_cghs,
-                "warning": "Low confidence match - verify hospital name" if is_cghs and hospital_match_confidence < 90 else None
+                "warning": "Low confidence match - verify hospital name"
+                    if is_cghs and hospital_match_confidence < 90 else None
             },
-            "analysis": analysis.model_dump()
+            "analysis": analysis,
         }
-        
-        result = clean_dict_for_json(result)
-        
-        return result
+
+        try:
+            encoded = jsonable_encoder(result)
+        except Exception as enc_err:
+            print(f"   Serialization error: {enc_err}")
+            traceback.print_exc()
+            raise HTTPException(
+                status_code=500,
+                detail=f"Response serialization failed: {enc_err}"
+            )
+
+        return JSONResponse(content=encoded)
     
     except HTTPException:
         raise
     except Exception as e:
-        print(f"   ❌ Error: {str(e)}")
+        print(f"   Error: {str(e)}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
     
     finally:
         if os.path.exists(temp_file):
             os.remove(temp_file)
-            print(f"   ✓ Cleaned up {temp_file}")
+            print(f"   Cleaned up {temp_file}")
 
 @app.post("/api/v1/bills/extract-only")
 async def extract_bill_only(file: UploadFile = File(...)):
@@ -351,10 +371,69 @@ async def get_statistics():
         "matching_method": "semantic_embeddings" if bill_analyzer.rate_validator.semantic_available else "fuzzy_matching"
     }
 
+from pydantic import BaseModel
+from typing import List, Any
+import json
+from fastapi.responses import StreamingResponse
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+    
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    context: Dict[str, Any]
+
+@app.post("/api/v1/chat")
+async def chat_endpoint(request: ChatRequest):
+    """Chat with the AI using bill context"""
+    try:
+        from langchain_nvidia_ai_endpoints import ChatNVIDIA
+        
+        client = ChatNVIDIA(
+          model="moonshotai/kimi-k2.5",
+          api_key=os.environ.get("NVIDIA_API_KEY", "---"),
+          temperature=1,
+          top_p=1,
+          max_completion_tokens=16384,
+        )
+        
+        system_prompt = (
+            "You are an AI assistant helping a user understand their medical bill analysis. "
+            "You are friendly, professional, and knowledgeable. Only rely on the context provided. "
+            "Here is the detailed context about the bill and its analysis:\n"
+            f"Context: {json.dumps(request.context)}\n\n"
+            "Answer the user's questions based on this context. Be clear and concise."
+        )
+        
+        langchain_messages = [{"role": "system", "content": system_prompt}]
+        for msg in request.messages:
+            langchain_messages.append({"role": msg.role, "content": msg.content})
+            
+        def event_stream():
+            try:
+                for chunk in client.stream(langchain_messages, chat_template_kwargs={"thinking":True}):
+                    if chunk.additional_kwargs and "reasoning_content" in chunk.additional_kwargs:
+                        reasoning = chunk.additional_kwargs["reasoning_content"]
+                        yield f"data: {json.dumps({'type': 'reasoning', 'content': reasoning})}\n\n"
+                    
+                    if chunk.content:
+                        yield f"data: {json.dumps({'type': 'content', 'content': chunk.content})}\n\n"
+                
+                yield "data: [DONE]\n\n"
+            except Exception as stream_e:
+                yield f"data: {json.dumps({'error': str(stream_e)})}\n\n"
+                
+        return StreamingResponse(event_stream(), media_type="text/event-stream")
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "=" * 70)
-    print("🏥 Medical Bill Analyzer API Server v3.1 (Refactored)")
+    print(" Medical Bill Analyzer API Server v3.1 (Refactored)")
     print("=" * 70)
     
     uvicorn.run(

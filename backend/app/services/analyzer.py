@@ -148,6 +148,7 @@ class BillAnalyzer:
             price_comparisons=price_comparisons,
             total_overcharge=total_overcharge,
             is_cghs=True,
+            quantity_anomalies=self._detect_quantity_anomalies(bill_data),
         )
         rejection_prob, rejection_label, rejection_reasons = self._compute_insurance_rejection(
             bill_data=bill_data,
@@ -155,12 +156,13 @@ class BillAnalyzer:
             overall_risk=overall_risk,
             is_cghs=True,
             total_overcharge=total_overcharge,
+            quantity_anomalies=self._detect_quantity_anomalies(bill_data),
         )
 
         # Timeline plausibility
         timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data)
 
-        # Quantity anomaly detection
+        # Quantity anomaly detection (single pass — reuse from above)
         quantity_anomalies = self._detect_quantity_anomalies(bill_data)
 
         return BillAnalysisResult(
@@ -260,12 +262,14 @@ class BillAnalyzer:
             recommendations.insert(0, "Charges are significantly higher than CGHS reference rates - consider price negotiation")
 
         # Derived risk metrics (for non-CGHS we treat CGHS differences as reference only)
+        detected_anomalies = self._detect_quantity_anomalies(bill_data)
         fraud_score, fraud_label, fraud_breakdown, doc_details = self._compute_fraud_risk(
             bill_data=bill_data,
             violations=violations,
             price_comparisons=price_comparisons,
             total_overcharge=0.0,
             is_cghs=False,
+            quantity_anomalies=detected_anomalies,
         )
         rejection_prob, rejection_label, rejection_reasons = self._compute_insurance_rejection(
             bill_data=bill_data,
@@ -273,13 +277,14 @@ class BillAnalyzer:
             overall_risk=overall_risk,
             is_cghs=False,
             total_overcharge=0.0,
+            quantity_anomalies=detected_anomalies,
         )
 
         # Timeline plausibility
         timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data)
 
-        # Quantity anomaly detection
-        quantity_anomalies = self._detect_quantity_anomalies(bill_data)
+        # Quantity anomaly detection (single pass — reuse from above)
+        quantity_anomalies = detected_anomalies
 
         return BillAnalysisResult(
             hospital_name=bill_data.hospital_name,
@@ -543,6 +548,7 @@ class BillAnalyzer:
         price_comparisons: List[PriceComparison],
         total_overcharge: float,
         is_cghs: bool,
+        quantity_anomalies: Optional[List] = None,
     ) -> tuple:
         """
         Heuristic fraud risk score (0–100) with simple breakdown.
@@ -685,18 +691,27 @@ class BillAnalyzer:
                 temporal_points = max(temporal_points, 3)
         temporal_points = min(10, temporal_points)
 
-        # Consumable padding (0–10): repeated small consumables with high deviation
-        consumable_keywords = ("consumable", "syringe", "glove", "cotton", "bandage", "disposable")
-        consumable_points = 0
-        for pc in price_comparisons:
-            name_lower = pc.item.lower()
-            if any(k in name_lower for k in consumable_keywords) and pc.deviation_percentage and pc.deviation_percentage > 50:
-                consumable_points += 3
-                if consumable_points >= 10:
-                    break
-        consumable_points = min(10, consumable_points)
+        # Quantity / consumable padding (0–15)
+        # Replaces the old narrow CGHS-rate-only consumable check.
+        # Anomalies are detected independently of rate data, so they apply to all bills.
+        padding_points = 0
+        if quantity_anomalies:
+            high_anomalies = sum(1 for a in quantity_anomalies if a.severity == Severity.HIGH)
+            med_anomalies  = sum(1 for a in quantity_anomalies if a.severity == Severity.MEDIUM)
+            padding_points += min(10, high_anomalies * 5)
+            padding_points += min(5,  med_anomalies  * 2)
+        else:
+            # Fallback: old price-deviation-only check
+            consumable_keywords = ("consumable", "syringe", "glove", "cotton", "bandage", "disposable")
+            for pc in price_comparisons:
+                name_lower = pc.item.lower()
+                if any(k in name_lower for k in consumable_keywords) and pc.deviation_percentage and pc.deviation_percentage > 50:
+                    padding_points += 3
+                    if padding_points >= 10:
+                        break
+        padding_points = min(15, padding_points)
 
-        total_score = doc_points + cg_points + bis_points + temporal_points + consumable_points
+        total_score = doc_points + cg_points + bis_points + temporal_points + padding_points
         total_score = max(0, min(100, total_score))
 
         if total_score >= 86:
@@ -713,7 +728,7 @@ class BillAnalyzer:
             "CGHS Violations": int(cg_points),
             "BIS Non-compliance": int(bis_points),
             "Temporal Anomalies": int(temporal_points),
-            "Consumable Padding": int(consumable_points),
+            "Quantity Padding": int(padding_points),
         }
         return int(total_score), label, breakdown, doc_details_msg
 
@@ -724,6 +739,7 @@ class BillAnalyzer:
         overall_risk: Severity,
         is_cghs: bool,
         total_overcharge: float,
+        quantity_anomalies: Optional[List] = None,
     ) -> tuple:
         """
         Heuristic probability (0–100) that an insurer/TPA will raise issues
@@ -766,6 +782,46 @@ class BillAnalyzer:
             added_prob = min(18, (total_overcharge / 10000.0) * 8.0)
             prob += added_prob
             reasons.append(f"CGHS Overcharge (+{added_prob:.1f}% risk): Billed amount exceeds statutory limits for empanelled hospitals.")
+
+        # Balance billing deviation vs pre-auth
+        balance_billing_v = next(
+            (v for v in violations if v.type == ViolationType.BALANCE_BILLING), None
+        )
+        if balance_billing_v and balance_billing_v.deviation_percentage:
+            dev = balance_billing_v.deviation_percentage
+            if dev > 50:
+                added_prob = min(20, dev * 0.25)  # up to +20%
+                prob += added_prob
+                reasons.append(
+                    f"Severe balance billing (+{added_prob:.1f}% risk): Bill is {dev:.0f}% above pre-authorization "
+                    f"(₹{balance_billing_v.charged_amount:,.0f} vs approved ₹{balance_billing_v.expected_amount:,.0f}). "
+                    f"TPAs routinely cap payment at authorized amount."
+                )
+            elif dev > 20:
+                added_prob = min(10, dev * 0.2)
+                prob += added_prob
+                reasons.append(
+                    f"Balance billing overshoot (+{added_prob:.1f}% risk): Bill exceeds pre-auth by {dev:.0f}%."
+                )
+
+        # Quantity anomalies flagged by the anomaly detector
+        if quantity_anomalies:
+            high_qa = sum(1 for a in quantity_anomalies if a.severity == Severity.HIGH)
+            med_qa  = sum(1 for a in quantity_anomalies if a.severity == Severity.MEDIUM)
+            if high_qa:
+                added_prob = min(15, high_qa * 5)
+                prob += added_prob
+                reasons.append(
+                    f"Excessive consumable quantities ({high_qa} HIGH anomal{'ies' if high_qa>1 else 'y'}) (+{added_prob}% risk): "
+                    f"Unusually high quantity of consumables is a common padding pattern that insurers flag."
+                )
+            if med_qa:
+                added_prob = min(8, med_qa * 3)
+                prob += added_prob
+                reasons.append(
+                    f"Elevated consumable quantities ({med_qa} MEDIUM anomal{'ies' if med_qa>1 else 'y'}) (+{added_prob}% risk): "
+                    f"Consumable usage above expected norms."
+                )
 
         # Overall risk band
         if overall_risk == Severity.HIGH:

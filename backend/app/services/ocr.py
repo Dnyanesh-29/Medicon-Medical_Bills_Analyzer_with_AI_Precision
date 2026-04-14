@@ -7,6 +7,10 @@ from typing import Optional
 from google.cloud import vision
 from pdf2image import convert_from_path
 
+# Explicit Poppler path for Windows (avoids PATH resolution issues when server
+# starts before PATH changes take effect in the current session)
+POPPLER_PATH = r"C:\Users\dnyan\poppler\poppler-24.08.0\Library\bin"
+
 
 try:
     from google.genai import Client as GeminiClient
@@ -67,7 +71,9 @@ class GoogleVisionOCR:
     def extract_text_from_pdf(self, pdf_path: str) -> str:
         """Extract text from PDF"""
         try:
-            images = convert_from_path(pdf_path, first_page=1, last_page=5)
+            # Pass poppler_path explicitly for Windows compatibility
+            poppler_path = POPPLER_PATH if os.path.isdir(POPPLER_PATH) else None
+            images = convert_from_path(pdf_path, first_page=1, last_page=5, poppler_path=poppler_path)
         except Exception as e:
             raise Exception(f"PDF conversion failed: {e}. Make sure poppler is installed.")
         
@@ -87,9 +93,52 @@ class GoogleVisionOCR:
         return "\n\n".join(all_text)
 
 
+def _repair_truncated_json(text: str) -> str:
+    """
+    Best-effort repair of a JSON string that was cut off mid-output.
+    Closes any unclosed string literals, arrays, and objects so that
+    json.loads() has a fighting chance.
+    """
+    # Remove trailing comma before closing (common truncation artifact)
+    text = text.rstrip().rstrip(",")
+
+    # Count open vs closed brackets
+    stack = []
+    in_string = False
+    escape_next = False
+    for ch in text:
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\" and in_string:
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch in "{[":
+            stack.append("}" if ch == "{" else "]")
+        elif ch in "}]":
+            if stack and stack[-1] == ch:
+                stack.pop()
+
+    # Close any unclosed string
+    if in_string:
+        text += '"'
+
+    # Close any unclosed containers in reverse order
+    text += "".join(reversed(stack))
+    return text
+
+
 class GeminiStructurer:
     """Use Gemini 2.0 Flash to structure OCR text into bill data"""
     
+    # gemini-2.5-flash is the free-tier model
+    MODEL = "gemini-2.5-flash"
+
     def __init__(self):
 
         self.client = None
@@ -180,14 +229,19 @@ Return this EXACT JSON structure:
 }}"""
 
         try:
+            from google.genai import types as genai_types
             response = self.client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt
+                model=self.MODEL,
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(
+                    max_output_tokens=8192,
+                    temperature=0.1,   # low = deterministic, fewer hallucinations
+                )
             )
-            
+
             response_text = response.text.strip()
-            
-            # Clean response
+
+            # Strip markdown code fences if present
             if response_text.startswith('```json'):
                 response_text = response_text[7:]
             if response_text.startswith('```'):
@@ -195,11 +249,40 @@ Return this EXACT JSON structure:
             if response_text.endswith('```'):
                 response_text = response_text[:-3]
             response_text = response_text.strip()
-            
-            # Parse JSON
-            extracted_data = json.loads(response_text)
-            
+
+            # ── Parse JSON with truncation repair ───────────────────────────────
+            try:
+                extracted_data = json.loads(response_text)
+            except json.JSONDecodeError:
+                print("   ⚠️  JSON appears truncated — attempting repair...")
+                response_text = _repair_truncated_json(response_text)
+                try:
+                    extracted_data = json.loads(response_text)
+                    print("   ✓ JSON repaired successfully")
+                except json.JSONDecodeError as e2:
+                    raise Exception(
+                        f"Gemini returned invalid JSON (repair failed): {e2}\n"
+                        f"Response: {response_text[:500]}"
+                    )
+
             # Convert to BillData
+            items = [
+                BillItem(
+                    description=item.get('description', ''),
+                    quantity=float(item.get('quantity', 1.0)) if item.get('quantity') else 1.0,
+                    unit_price=float(item.get('unit_price', 0)) if item.get('unit_price') else None,
+                    total_price=float(item.get('total_price', 0)),
+                    category=item.get('category')
+                )
+                for item in extracted_data.get('items', [])
+            ]
+
+            total_amount = float(extracted_data.get('total_amount', 0) or 0)
+            # If Gemini returned 0 but we have itemized charges, sum them as fallback
+            if total_amount == 0 and items:
+                total_amount = sum(i.total_price for i in items)
+                print(f"   ⚠️  total_amount was 0, using items sum: ₹{total_amount:,.0f}")
+
             bill_data = BillData(
                 hospital_name=extracted_data.get('hospital_name', 'Unknown Hospital'),
                 hospital_address=extracted_data.get('hospital_address'),
@@ -208,27 +291,18 @@ Return this EXACT JSON structure:
                 bill_date=extracted_data.get('bill_date'),
                 admission_date=extracted_data.get('admission_date'),
                 discharge_date=extracted_data.get('discharge_date'),
-                total_amount=float(extracted_data.get('total_amount', 0)),
+                total_amount=total_amount,
                 advance_paid=float(extracted_data.get('advance_paid', 0)) if extracted_data.get('advance_paid') else 0.0,
                 balance_amount=float(extracted_data.get('balance_amount', 0)) if extracted_data.get('balance_amount') else None,
                 pre_auth_amount=float(extracted_data.get('pre_auth_amount', 0)) if extracted_data.get('pre_auth_amount') else None,
-                items=[
-                    BillItem(
-                        description=item.get('description', ''),
-                        quantity=float(item.get('quantity', 1.0)) if item.get('quantity') else 1.0,
-                        unit_price=float(item.get('unit_price', 0)) if item.get('unit_price') else None,
-                        total_price=float(item.get('total_price', 0)),
-                        category=item.get('category')
-                    )
-                    for item in extracted_data.get('items', [])
-                ]
+                items=items
             )
-            
+
             return bill_data
-            
-        except json.JSONDecodeError as e:
-            raise Exception(f"Gemini returned invalid JSON: {e}\nResponse: {response_text[:500]}")
+
         except Exception as e:
+            if 'Gemini returned invalid JSON' in str(e) or 'Gemini processing failed' in str(e):
+                raise
             raise Exception(f"Gemini processing failed: {e}")
 
 

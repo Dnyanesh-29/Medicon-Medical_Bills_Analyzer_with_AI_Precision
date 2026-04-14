@@ -13,6 +13,7 @@ import { BillData, BillAnalysisResult } from "@/types";
 import { cn } from "@/lib/utils";
 import { getInsuranceComplianceInfo } from "@/lib/insuranceCompliance";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import Chatbot from "./Chatbot";
 
 const fontHeading = Outfit({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
@@ -592,6 +593,7 @@ export default function AnalysisResult({ billData, analysis }: AnalysisResultPro
 
         </div>
       </div>
+      <Chatbot billData={billData} analysis={analysis} />
     </motion.div>
   );
 }

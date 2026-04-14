@@ -8,10 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
 interface BillUploaderProps {
     onUpload: (file: File) => Promise<void>;
     isUploading: boolean;
+    externalError?: string | null;
 }
 
-export default function BillUploader({ onUpload, isUploading }: BillUploaderProps) {
+export default function BillUploader({ onUpload, isUploading, externalError }: BillUploaderProps) {
     const [error, setError] = useState<string | null>(null);
+    const displayError = externalError || error;
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
 
@@ -118,15 +120,15 @@ export default function BillUploader({ onUpload, isUploading }: BillUploaderProp
             </div>
 
             <AnimatePresence>
-                {error && (
+                {displayError && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-sm"
                     >
-                        <AlertCircle className="w-4 h-4" />
-                        {error}
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        {displayError}
                     </motion.div>
                 )}
             </AnimatePresence>

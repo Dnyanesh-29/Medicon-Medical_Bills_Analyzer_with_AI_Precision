@@ -2,13 +2,18 @@ import json
 import math
 import re
 import os
+import hashlib
 import traceback
 import logging
+import warnings
 from typing import List, Optional, Tuple, Dict
 import numpy as np
 from fuzzywuzzy import fuzz
-from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+
+# Suppress noisy HuggingFace unauthenticated warning — we don't need the Hub at runtime
+warnings.filterwarnings("ignore", message=".*unauthenticated.*", category=UserWarning)
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 try:
     from google.genai import Client as GeminiClient
@@ -288,17 +293,44 @@ class SemanticRateValidator:
         }
 
         try:
+            from sentence_transformers import SentenceTransformer
             print("   🧠 Loading semantic matching model...")
-            # NOTE: Consider upgrading to "pritamdeka/S-PubMedBert-MS-MARCO"
-            # for significantly better medical abbreviation understanding.
             self.model = SentenceTransformer("all-MiniLM-L6-v2")
             self.procedures = [
                 r.get("procedure", "") for r in self.rates_db if r.get("procedure")
             ]
-            print(f"   📊 Computing embeddings for {len(self.procedures)} procedures…")
-            self.procedure_embeddings = self.model.encode(
-                self.procedures, show_progress_bar=False
-            )
+
+            # ── Persistent embedding cache ────────────────────────────────
+            # Cache file lives next to the rates JSON.
+            # Key = SHA-256 of all procedure names joined — auto-invalidates
+            # whenever the CGHS rates data changes.
+            _cache_dir  = os.path.dirname(rates_json_path)
+            _proc_hash  = hashlib.sha256(
+                "\n".join(self.procedures).encode("utf-8")
+            ).hexdigest()[:16]
+            _cache_path = os.path.join(_cache_dir, f"embeddings_cache_{_proc_hash}.npz")
+
+            if os.path.isfile(_cache_path):
+                print(f"   ⚡ Loading cached embeddings from {os.path.basename(_cache_path)}…")
+                _data = np.load(_cache_path, allow_pickle=False)
+                self.procedure_embeddings = _data["embeddings"]
+                print(f"   ✓ Loaded {len(self.procedures)} embeddings from cache")
+            else:
+                print(f"   📊 Computing embeddings for {len(self.procedures)} procedures… (first run, will cache)")
+                self.procedure_embeddings = self.model.encode(
+                    self.procedures, show_progress_bar=True, batch_size=128
+                )
+                np.savez_compressed(_cache_path, embeddings=self.procedure_embeddings)
+                print(f"   ✓ Computed & cached {len(self.procedures)} embeddings → {os.path.basename(_cache_path)}")
+                # Remove any stale cache files from previous versions
+                for _f in os.listdir(_cache_dir):
+                    if _f.startswith("embeddings_cache_") and _f.endswith(".npz") and _f != os.path.basename(_cache_path):
+                        try:
+                            os.remove(os.path.join(_cache_dir, _f))
+                            print(f"   🗑  Removed stale cache: {_f}")
+                        except OSError:
+                            pass
+
             for idx, proc in enumerate(self.procedures):
                 cat = _classify_item_category(proc)
                 if cat:
@@ -464,11 +496,24 @@ class SemanticRateValidator:
                 continue
 
             charged = self._normalise_charge(item)
-            if charged is None or charged <= cghs_rate:
+            if charged is None:
+                continue
+
+            # ── Quantity scaling ─────────────────────────────────────────────
+            # For non-per-day items with qty > 1 (e.g. 5 consultations),
+            # the CGHS rate is per-occurrence. Scale it by qty so we compare
+            # "total billed" vs "CGHS total allowance", not unit vs unit.
+            # Per-day items are already normalised to per-day by _normalise_charge.
+            effective_cghs = cghs_rate
+            qty = _safe_float(item.quantity) if item.quantity else None
+            if qty and qty > 1 and not _is_per_day_item(item.description):
+                effective_cghs = cghs_rate * qty
+
+            if charged <= effective_cghs:
                 continue
 
             try:
-                deviation = ((charged - cghs_rate) / cghs_rate) * 100
+                deviation = ((charged - effective_cghs) / effective_cghs) * 100
             except ZeroDivisionError:
                 continue
 
@@ -518,7 +563,7 @@ class SemanticRateValidator:
                     ),
                     item=item.description,
                     charged_amount=charged,
-                    expected_amount=cghs_rate,
+                    expected_amount=effective_cghs,   # ← scaled by qty
                     deviation_percentage=deviation,
                     legal_reference=legal_ref,
                     is_enforceable=enforceable,
@@ -544,8 +589,16 @@ class SemanticRateValidator:
         if charged is None:
             return None
 
+        # ── Quantity scaling ─────────────────────────────────────────────
+        # Same logic as check_rate_violations: for non-per-day items billed
+        # with qty > 1, scale the CGHS unit rate to the total allowance.
+        effective_cghs = cghs_rate
+        qty = _safe_float(item.quantity) if item.quantity else None
+        if qty and qty > 1 and not _is_per_day_item(item.description):
+            effective_cghs = cghs_rate * qty
+
         try:
-            deviation = ((charged - cghs_rate) / cghs_rate) * 100
+            deviation = ((charged - effective_cghs) / effective_cghs) * 100
         except ZeroDivisionError:
             return None
 
@@ -553,13 +606,15 @@ class SemanticRateValidator:
             return None
 
         display_proc = matched_proc
-        if _is_per_day_item(item.description) and item.quantity and item.quantity > 1:
+        if _is_per_day_item(item.description) and qty and qty > 1:
             display_proc = f"{matched_proc} (per day)"
+        elif qty and qty > 1 and not _is_per_day_item(item.description):
+            display_proc = f"{matched_proc} ×{int(qty)}"
 
         return PriceComparison(
             item=item.description,
             charged_amount=charged,
-            cghs_rate=cghs_rate,
+            cghs_rate=effective_cghs,       # ← show scaled rate in UI
             cghs_procedure_matched=display_proc,
             match_confidence=confidence,
             applicable_rate_type=nabh_status,

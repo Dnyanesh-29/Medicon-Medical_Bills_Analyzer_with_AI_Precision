@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Bill - Sahyadri Super Speciality Hospital</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: #111;
+        }
+
+        .a4-page {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* simulated paper texture/scan noise for realism */
+        .a4-page::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.03"/%3E%3C/svg%3E');
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .hospital-name {
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+            color: #000;
+        }
+
+        .hospital-address {
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .cghs-badge {
+            display: inline-block;
+            border: 1px solid #000;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .bill-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: underline;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .details-box {
+            border: 1px solid #000;
+            padding: 10px;
+        }
+
+        .details-row {
+            display: flex;
+            margin-bottom: 4px;
+        }
+
+        .details-label {
+            font-weight: 600;
+            width: 140px;
+            flex-shrink: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+        }
+
+        th {
+            background-color: #f8f8f8;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        td.num, th.num {
+            text-align: right;
+        }
+
+        .category-row td {
+            font-weight: 700;
+            background-color: #fdfdfd;
+            padding-top: 10px;
+        }
+
+        .totals-table {
+            width: 40%;
+            margin-left: auto;
+            margin-bottom: 40px;
+        }
+
+        .totals-table td {
+            padding: 6px 8px;
+        }
+
+        .totals-label {
+            font-weight: 600;
+        }
+
+        .grand-total {
+            font-weight: 700;
+            font-size: 14px;
+            background-color: #f0f0f0;
+        }
+
+        .amount-words {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 40px;
+            padding-top: 5px;
+        }
+
+        /* slightly faded text to simulate ink */
+        * {
+            color: #1a1a1a;
+        }
+        
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            color: rgba(0,0,0,0.03);
+            white-space: nowrap;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="a4-page">
+        <div class="watermark">SAHYADRI HOSPITAL</div>
+        
+        <div class="header">
+            <h1 class="hospital-name">Sahyadri Super Speciality Hospital</h1>
+            <p class="hospital-address">Plot No. 9A, S.No. 113, Near Hermes Heritage, Shastri Nagar, Yerawada, Pune - 411006</p>
+            <p class="hospital-address">Tel: 020-67215000 | Email: billing.yerawada@sahyadrihospitals.com</p>
+            <p class="hospital-address">GSTIN: 27AABCS6782M1Z0 | PAN: AABCS6782M</p>
+            <div class="cghs-badge">CGHS EMPANELLED (NABH ACCREDITED)</div>
+        </div>
+
+        <div class="bill-title">INPATIENT FINAL DETAILED BILL</div>
+
+        <div class="details-grid">
+            <div class="details-box">
+                <div class="details-row"><span class="details-label">Patient Name:</span> <span>Mr. RAMESH CHANDRA SHARMA</span></div>
+                <div class="details-row"><span class="details-label">Age / Sex:</span> <span>64 Yrs / M</span></div>
+                <div class="details-row"><span class="details-label">Patient ID / UHID:</span> <span>SHP/2026/089142</span></div>
+                <div class="details-row"><span class="details-label">CGHS Ben. ID:</span> <span>4389201</span></div>
+                <div class="details-row"><span class="details-label">Ward Entitlement:</span> <span>Semi-Private Ward</span></div>
+                <div class="details-row"><span class="details-label">Consultant:</span> <span>Dr. Vikram Desai (Cardiology)</span></div>
+            </div>
+            <div class="details-box">
+                <div class="details-row"><span class="details-label">Bill No:</span> <span>IPB-2627-04821</span></div>
+                <div class="details-row"><span class="details-label">Bill Date & Time:</span> <span>16-Mar-2026 10:15 AM</span></div>
+                <div class="details-row"><span class="details-label">DOA & Time:</span> <span>12-Mar-2026 09:30 PM</span></div>
+                <div class="details-row"><span class="details-label">DOD & Time:</span> <span>16-Mar-2026 11:00 AM</span></div>
+                <div class="details-row"><span class="details-label">Sponsor / TPA:</span> <span>CGHS PUNE</span></div>
+                <div class="details-row"><span class="details-label">Primary Diagnosis:</span> <span>Acute Coronary Syndrome (ACS)</span></div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Sr.</th>
+                    <th>Date</th>
+                    <th>Service / Particulars</th>
+                    <th class="num">Qty</th>
+                    <th class="num">Rate (₹)</th>
+                    <th class="num">Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Room & Bed Charges -->
+                <tr class="category-row"><td colspan="6">1. ROOM & NURSING CHARGES</td></tr>
+                <tr><td>1.1</td><td>12-Mar-26</td><td>ICU Bed Charges (Day 1)</td><td class="num">1</td><td class="num">862.00</td><td class="num">862.00</td></tr>
+                <tr><td>1.2</td><td>13-Mar-26</td><td>ICU Bed Charges (Day 2)</td><td class="num">1</td><td class="num">862.00</td><td class="num">862.00</td></tr>
+                <tr><td>1.3</td><td>14-Mar-26</td><td>Semi-Private Ward Bed Charges</td><td class="num">2</td><td class="num">2000.00</td><td class="num">4000.00</td></tr>
+
+                <!-- Consultation -->
+                <tr class="category-row"><td colspan="6">2. CONSULTATION / VISIT CHARGES</td></tr>
+                <tr><td>2.1</td><td>12-Mar-26</td><td>Emergency Consultant Visit</td><td class="num">1</td><td class="num">345.00</td><td class="num">345.00</td></tr>
+                <tr><td>2.2</td><td>13-Mar-26</td><td>Specialist Visit (Cardiologist) - ICU</td><td class="num">2</td><td class="num">345.00</td><td class="num">690.00</td></tr>
+                <tr><td>2.3</td><td>15-Mar-26</td><td>Specialist Visit (Cardiologist) - Ward</td><td class="num">2</td><td class="num">345.00</td><td class="num">690.00</td></tr>
+
+                <!-- Investigations -->
+                <tr class="category-row"><td colspan="6">3. LABORATORY & RADIOLOGY INVESTIGATIONS</td></tr>
+                <tr><td>3.1</td><td>12-Mar-26</td><td>ECG (Electrocardiogram)</td><td class="num">2</td><td class="num">150.00</td><td class="num">300.00</td></tr>
+                <tr><td>3.2</td><td>12-Mar-26</td><td>Trop-I (Standard)</td><td class="num">1</td><td class="num">460.00</td><td class="num">460.00</td></tr>
+                <tr><td>3.3</td><td>13-Mar-26</td><td>Complete Blood Count (CBC)</td><td class="num">1</td><td class="num">135.00</td><td class="num">135.00</td></tr>
+                <tr><td>3.4</td><td>13-Mar-26</td><td>Kidney Function Test (KFT)</td><td class="num">1</td><td class="num">225.00</td><td class="num">225.00</td></tr>
+                <tr><td>3.5</td><td>13-Mar-26</td><td>2D Echocardiography</td><td class="num">1</td><td class="num">920.00</td><td class="num">920.00</td></tr>
+
+                <!-- Procedure -->
+                <tr class="category-row"><td colspan="6">4. SURGERY / PROCEDURE CHARGES</td></tr>
+                <tr><td>4.1</td><td>13-Mar-26</td><td>Coronary Angiography (CAG)</td><td class="num">1</td><td class="num">7820.00</td><td class="num">7820.00</td></tr>
+
+                <!-- Pharmacy & Consumables -->
+                <tr class="category-row"><td colspan="6">5. PHARMACY & CONSUMABLES</td></tr>
+                <tr><td>5.1</td><td>13-Mar-26</td><td>Inj. Heparin 25000 IU</td><td class="num">2</td><td class="num">180.50</td><td class="num">361.00</td></tr>
+                <tr><td>5.2</td><td>13-Mar-26</td><td>Tab. Clopidogrel 75mg</td><td class="num">10</td><td class="num">8.40</td><td class="num">84.00</td></tr>
+                <tr><td>5.3</td><td>14-Mar-26</td><td>Tab. Atorvastatin 40mg</td><td class="num">10</td><td class="num">12.50</td><td class="num">125.00</td></tr>
+                <tr><td>5.4</td><td>12-Mar-26</td><td>IV Fluids Set & Cannula</td><td class="num">1</td><td class="num">240.00</td><td class="num">240.00</td></tr>
+                <tr><td>5.5</td><td>13-Mar-26</td><td>Angiography Kit / Consumables</td><td class="num">1</td><td class="num">2500.00</td><td class="num">2500.00</td></tr>
+
+                <!-- Miscellaneous -->
+                <tr class="category-row"><td colspan="6">6. MISCELLANEOUS CHARGES</td></tr>
+                <tr><td>6.1</td><td>12-Mar-26</td><td>Registration / Admission Charges</td><td class="num">1</td><td class="num">150.00</td><td class="num">150.00</td></tr>
+                <tr><td>6.2</td><td>12-Mar-26</td><td>Biomedical Waste Charges</td><td class="num">4</td><td class="num">50.00</td><td class="num">200.00</td></tr>
+            </tbody>
+        </table>
+
+        <table class="totals-table">
+            <tbody>
+                <tr>
+                    <td class="totals-label">Total Billed Amount:</td>
+                    <td class="num">₹ 20,969.00</td>
+                </tr>
+                <tr>
+                    <td class="totals-label">Discount / CGHS Deduction:</td>
+                    <td class="num">- ₹ 0.00</td>
+                </tr>
+                <tr>
+                    <td class="totals-label">Net Payable Amount:</td>
+                    <td class="num">₹ 20,969.00</td>
+                </tr>
+                <tr>
+                    <td class="totals-label">Advance Paid:</td>
+                    <td class="num">₹ 0.00</td>
+                </tr>
+                <tr class="grand-total">
+                    <td class="totals-label">BALANCE DUE:</td>
+                    <td class="num">₹ 20,969.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="amount-words">Amount in Words: Rupees Twenty Thousand Nine Hundred Sixty Nine Only.</p>
+
+        <p style="font-size: 11px; font-style: italic; margin-bottom: 20px;">
+            Declaration: All charges are as per approved CGHS rates for Pune city (Semi-Private Ward). Medicines and consumables are billed at actuals not exceeding MRP. Implants (if any) are billed with the respective invoice attached.
+        </p>
+
+        <div class="footer">
+            <div class="signature-box">
+                <p>Checked By</p>
+                <div class="signature-line">Billing Executive</div>
+            </div>
+            <div class="signature-box">
+                <p>Patient / Relative Signature</p>
+                <div class="signature-line">Mr. RAMESH CHANDRA SHARMA</div>
+            </div>
+            <div class="signature-box">
+                <img src="data:image/svg+xml;utf8,<svg width='100' height='40' xmlns='http://www.w3.org/2000/svg'><path d='M10,30 Q20,10 40,25 T80,15' fill='none' stroke='%23000080' stroke-width='2'/><path d='M30,35 L40,15 L50,30' fill='none' stroke='%23000080' stroke-width='1.5'/></svg>" alt="Auth Sign" style="height:40px; margin-bottom:-5px;">
+                <div class="signature-line">Authorized Signatory</div>
+                <div style="font-size: 10px; margin-top:2px;">For Sahyadri Hospitals</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

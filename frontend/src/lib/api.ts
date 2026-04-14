@@ -45,17 +45,28 @@ export const uploadAndAnalyzeBill = async (file: File) => {
     formData.append("file", file);
 
     try {
-        // Increase timeout for analysis
+        // Increase timeout for analysis (Vision OCR + Gemini can take time)
         const res = await api.post("/api/v1/bills/upload-and-analyze", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
-            timeout: 120000,
+            timeout: 180000, // 3 minutes
         });
         return res.data;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            throw new Error(error.response?.data?.detail || "Upload failed");
+            if (!error.response) {
+                // Network error — server crashed / no response sent
+                throw new Error(
+                    `Network error: Could not reach server. ${error.message}`
+                );
+            }
+            // Server returned an error response
+            const detail = error.response.data?.detail
+                || error.response.data?.message
+                || JSON.stringify(error.response.data)
+                || `HTTP ${error.response.status}`;
+            throw new Error(detail);
         }
         throw error;
     }

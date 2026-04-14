@@ -8,6 +8,7 @@ import { BillData, BillAnalysisResult } from "@/types";
 
 export default function UploadPage() {
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
     const [result, setResult] = useState<{
         billData: BillData;
         analysis: BillAnalysisResult;
@@ -16,6 +17,7 @@ export default function UploadPage() {
     const handleUpload = async (file: File) => {
         setIsUploading(true);
         setResult(null);
+        setUploadError(null);
         try {
             const response = await uploadAndAnalyzeBill(file);
             if (response.success) {
@@ -24,9 +26,12 @@ export default function UploadPage() {
                     analysis: response.analysis,
                 });
             } else {
+                setUploadError("Analysis failed — please try again.");
                 console.error("Analysis failed:", response);
             }
         } catch (error) {
+            const msg = error instanceof Error ? error.message : "Upload failed";
+            setUploadError(msg);
             console.error("Upload error:", error);
         } finally {
             setIsUploading(false);
@@ -46,7 +51,7 @@ export default function UploadPage() {
                 </div>
 
                 <div className="flex justify-center">
-                    <BillUploader onUpload={handleUpload} isUploading={isUploading} />
+                    <BillUploader onUpload={handleUpload} isUploading={isUploading} externalError={uploadError} />
                 </div>
             </div>
 
