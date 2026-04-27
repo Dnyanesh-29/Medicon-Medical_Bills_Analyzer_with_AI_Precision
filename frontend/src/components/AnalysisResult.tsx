@@ -70,7 +70,7 @@ export default function AnalysisResult({ billData, analysis }: AnalysisResultPro
   const insuranceInfo = useMemo(() => getInsuranceComplianceInfo(analysis, billData), [analysis, billData]);
   const fraudBreakdown = analysis.fraud_risk_breakdown ?? {};
   const isCghs = analysis.is_cghs_empanelled;
-  const isNabh = (analysis.nabh_status || "").toLowerCase().includes("nabh");
+  const isNabh = (analysis.nabh_status || "").toLowerCase().includes("nabh") && !(analysis.nabh_status || "").toLowerCase().includes("non-nabh");
 
   const rejectionProb = analysis.insurance_rejection_probability ??
     Math.max(0, Math.min(100, 100 - insuranceInfo.claimReadinessScore));

@@ -134,10 +134,10 @@ def _repair_truncated_json(text: str) -> str:
 
 
 class GeminiStructurer:
-    """Use Gemini 2.0 Flash to structure OCR text into bill data"""
+    """Use Gemini models to structure OCR text into bill data with fallback"""
     
-    # gemini-2.5-flash is the free-tier model
-    MODEL = "gemini-2.5-flash"
+    # List of models to try in order (for backoff)
+    MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-1.5-flash"]
 
     def __init__(self):
 
@@ -184,7 +184,7 @@ Extract and structure this information into JSON format:
 5. Bill date (format: YYYY-MM-DD, be flexible with date formats)
 6. Admission date (format: YYYY-MM-DD if available)
 7. Discharge date (format: YYYY-MM-DD if available)
-8. Total amount (numeric only, no currency symbols)
+8. Total amount (numeric only, no currency symbols. Look specifically for 'TOTAL PAYABLE' or 'GRAND TOTAL' if present. Do NOT extract the 'Gross Total' before taxes.)
 9. Advance paid (numeric)
 10. Balance amount (numeric)
 11. Pre-auth / Insurance Approval Amount (numeric, look for 'Authorization', 'Approved', 'Pre-auth')
@@ -230,14 +230,29 @@ Return this EXACT JSON structure:
 
         try:
             from google.genai import types as genai_types
-            response = self.client.models.generate_content(
-                model=self.MODEL,
-                contents=prompt,
-                config=genai_types.GenerateContentConfig(
-                    max_output_tokens=8192,
-                    temperature=0.1,   # low = deterministic, fewer hallucinations
-                )
-            )
+            
+            response = None
+            last_error = None
+            
+            for model_name in self.MODELS:
+                try:
+                    print(f"   🤖 Trying model: {model_name}...")
+                    response = self.client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=genai_types.GenerateContentConfig(
+                            max_output_tokens=8192,
+                            temperature=0.1,   # low = deterministic, fewer hallucinations
+                        )
+                    )
+                    print(f"   ✓ Successfully generated content with {model_name}")
+                    break
+                except Exception as e:
+                    print(f"   ⚠️  Failed with {model_name}: {e}")
+                    last_error = e
+                    
+            if not response:
+                raise Exception(f"All fallback models failed. Last error: {last_error}")
 
             response_text = response.text.strip()
 
@@ -322,7 +337,7 @@ class HybridOCR:
         if not raw_text or len(raw_text) < 50:
             raise Exception("OCR extracted very little text. Image may be unclear or empty.")
         
-        print("🤖 Step 2/2: Structuring with Gemini 2.0 Flash...")
+        print("🤖 Step 2/2: Structuring with Gemini 1.5 Flash...")
         bill_data = self.gemini_structurer.structure_bill_text(raw_text)
         print("   ✓ Successfully structured bill data")
         
@@ -337,7 +352,7 @@ class HybridOCR:
         if not raw_text or len(raw_text) < 50:
             raise Exception("OCR extracted very little text from PDF. File may be corrupted or empty.")
         
-        print("🤖 Step 2/2: Structuring with Gemini 2.0 Flash...")
+        print("🤖 Step 2/2: Structuring with Gemini 1.5 Flash...")
         bill_data = self.gemini_structurer.structure_bill_text(raw_text)
         print("   ✓ Successfully structured bill data")
         

@@ -75,6 +75,14 @@ class HospitalDiscoveryService:
         
         hospital_name_clean = hospital_name.strip().lower()
         
+        # --- Manual Override for Sahyadri ---
+        # Forces the NABH version (sr_no 21) if the OCR detects Sahyadri Speciality
+        if "sahyadri" in hospital_name_clean and "speciality" in hospital_name_clean:
+            for hospital_data in self.hospitals_db:
+                if "sahyadri hospital limited" in hospital_data.get('hospital_name', '').lower() and hospital_data.get('nabh_status') == 'NABH/ NABL':
+                    return Hospital(**hospital_data)
+        # ------------------------------------
+        
         for hospital_data in self.hospitals_db:
             db_name = hospital_data.get('hospital_name', '').lower()
             
@@ -82,16 +90,12 @@ class HospitalDiscoveryService:
             if hospital_name_clean == db_name:
                 return Hospital(**hospital_data)
             
-            # Check if one name contains the other (high confidence)
-            # CAUTION: This can be risky if names are short (e.g. "City Hospital")
-            # Only do this if length is sufficient (> 5 chars)
-            if len(hospital_name_clean) > 5 and len(db_name) > 5:
-                if hospital_name_clean in db_name or db_name in hospital_name_clean:
-                     score = 95
-                else:
-                     score = fuzz.ratio(hospital_name_clean, db_name)
-            else:
-                 score = fuzz.ratio(hospital_name_clean, db_name)
+            # Use a weighted combination of token_set_ratio (handles substrings) 
+            # and ratio (penalizes huge length differences) to accurately tie-break.
+            ts_score = fuzz.token_set_ratio(hospital_name_clean, db_name)
+            r_score = fuzz.ratio(hospital_name_clean, db_name)
+            
+            score = (ts_score * 0.8) + (r_score * 0.2)
             
             if score > best_score:
                 best_score = score

@@ -1,0 +1,99 @@
+Slide 1: Technologies Involved
+Tech Stack
+Frontend
+React 19 / Next.js 16
+Tailwind CSS v4
+Recharts (visualization)
+Framer Motion (animations)
+
+Backend
+Python 3.11+
+FastAPI (REST API)
+Uvicorn
+
+Machine Learning / AI
+SentenceTransformers (all-MiniLM-L6-v2 for semantic embeddings)
+Google Generative AI (Gemini 2.5 Flash for OCR structuring & reranking)
+NVIDIA AI Endpoints (moonshotai/kimi-k2.5 via LangChain for chat)
+
+Computer Vision / OCR
+Google Cloud Vision API (primary text extraction)
+Hybrid OCR structuring pipeline
+
+Data Processing
+NumPy
+fuzzywuzzy (fuzzy string matching)
+
+
+Slide 2: System Architecture
+Architecture Diagram
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER INTERFACE                          │
+│               (Next.js Web App / Chat Interface)                │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      FASTAPI BACKEND                            │
+│                    (REST API Endpoints)                         │
+└─────┬──────────┬──────────┬──────────┬──────────┬──────────────┘
+      │          │          │          │          │
+      ▼          ▼          ▼          ▼          ▼
+┌──────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌──────────┐
+│   OCR    │ │Hospital│ │  Rate  │ │  Bill  │ │ AI Chat  │
+│Extractor │ │Matcher │ │Matcher │ │Analyzer│ │ Assistant│
+└──────────┘ └────────┘ └────────┘ └────────┘ └──────────┘
+      │          │          │          │          │
+      ▼          ▼          ▼          ▼          ▼
+┌────────────────────────────────────────────────────┐
+│              EXTERNAL SERVICES / DB                │
+├────────────────────────────────────────────────────┤
+│ • Google Vision API (Raw OCR Text)                 │
+│ • Google Gemini API (Structured Data / Reranking)  │
+│ • NVIDIA AI Endpoint (Conversational Context)      │
+│ • JSON Databases (CGHS Rates & Hospitals DB)       │
+└────────────────────────────────────────────────────┘
+
+Component Details
+Component                  Technology                           Purpose
+OCR Extractor              Google Vision + Gemini               Extract unstructured text from bills and structure it into standard JSON schemas.
+Hospital Matcher           fuzzywuzzy                           Detect if the hospital is CGHS-empanelled / NABH-accredited using fuzzy string matching.
+Rate Matcher               SentenceTransformers + Gemini        4-tier pipeline to flawlessly map raw billed items to standard CGHS procedures.
+Bill Analyzer              Custom Heuristic Rules               Detect 5 types of fraud, calculate overall risk score (0-100), and insurance rejection probability.
+AI Chat Assistant          LangChain + moonshotai/kimi-k2.5     Provide real-time streaming conversational Q&A based on the user's specific context.
+
+
+Slide 3: Implementation Methodology & Workflow
+Development Workflow
+1. BILL UPLOAD
+   └─> User uploads bill image/PDF via the Next.js web application.
+
+2. HYBRID OCR EXTRACTION 
+   └─> Google Cloud Vision extracts raw text.
+   └─> Gemini 2.5 Flash structures the raw text into line-item JSON models.
+
+3. HOSPITAL CONTEXT DISCOVERY
+   └─> Compute fuzzy text combinations (token_set_ratio) against the hospital database.
+   └─> Identify if hospital is CGHS-empanelled and its NABH status (affects rate slabs).
+
+4. FOUR-TIER RATE MATCHING
+   ├─> Tier 1: Skip generic aggregates (regex parsing for pharmacy, tax, totals).
+   ├─> Tier 2: Manual overrides (exact & longest word-bounded substring matches mapping).
+   ├─> Tier 3: Category-filtered semantic search (all-MiniLM-L6-v2) + LLM Gemini Reranking.
+   └─> Tier 4: Fuzzy fallback matching (if semantic confidence is too low).
+
+5. RISK AND ANOMALY DETECTION (5 Modules)
+   ├─> CGHS Rate Violations (package rate vs billed discrepancies).
+   ├─> Document & Math Inconsistencies (missing GST logic, unlisted items).
+   ├─> BIS Non-compliance (missing billing fields).
+   ├─> Temporal Anomalies (invalid admission/discharge timeline logic).
+   └─> Quantity Padding (heuristic detection rules for overuse of masks, gloves, etc).
+
+6. SCORING & OUTPUT
+   ├─> Calculate composite Fraud Risk Score (0-100) combining the 5 modules.
+   ├─> Output detailed timeline analysis and Itemized Price Comparisons.
+   └─> Display insurance rejection probability and breakdown.
+
+7. INTERACTIVE CHATBOT (POST-ANALYSIS)
+   └─> Analyze results fed into an AI Chat context window.
+   └─> NVIDIA AI endpoints process user queries to clarify insights about their bill securely.

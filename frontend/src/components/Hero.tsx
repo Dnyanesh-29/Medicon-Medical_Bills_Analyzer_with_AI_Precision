@@ -81,21 +81,7 @@ export default function Hero() {
                             </Link>
                         </motion.div>
 
-                        {/* Stats Strip */}
-                        <motion.div variants={item} className="pt-8 border-t border-slate-200 flex justify-center lg:justify-start gap-12">
-                            <div>
-                                <h4 className="text-3xl font-bold text-slate-900">99.8%</h4>
-                                <p className="text-sm font-medium text-slate-500 mt-1">Accuracy Rate</p>
-                            </div>
-                            <div>
-                                <h4 className="text-3xl font-bold text-teal-600">2ms</h4>
-                                <p className="text-sm font-medium text-slate-500 mt-1">Processing Time</p>
-                            </div>
-                            <div>
-                                <h4 className="text-3xl font-bold text-emerald-600">10k+</h4>
-                                <p className="text-sm font-medium text-slate-500 mt-1">Bills Analyzed</p>
-                            </div>
-                        </motion.div>
+                        
                     </motion.div>
 
                     {/* Right Column: Visual Features */}
@@ -129,7 +115,7 @@ export default function Hero() {
                             ))}
 
                             {/* Live Scanner Card - Clean Version */}
-                            <motion.div
+                            {/* <motion.div
                                 animate={{ y: [0, -10, 0] }}
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                                 className="absolute -right-8 top-1/2 -translate-y-1/2 p-5 rounded-xl bg-white border border-slate-200 shadow-xl w-72 z-20"
@@ -152,7 +138,7 @@ export default function Hero() {
                                         <span className="text-emerald-600">Ready</span>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </motion.div> */}
                         </div>
                     </motion.div>
                 </div>

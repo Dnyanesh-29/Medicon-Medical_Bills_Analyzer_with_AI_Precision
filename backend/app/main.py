@@ -388,37 +388,47 @@ class ChatRequest(BaseModel):
 async def chat_endpoint(request: ChatRequest):
     """Chat with the AI using bill context"""
     try:
-        from langchain_nvidia_ai_endpoints import ChatNVIDIA
+        from google.genai import Client
+        from google.genai import types
         
-        client = ChatNVIDIA(
-          model="moonshotai/kimi-k2.5",
-          api_key=os.environ.get("NVIDIA_API_KEY", "---"),
-          temperature=1,
-          top_p=1,
-          max_completion_tokens=16384,
-        )
+        client = Client(api_key=os.environ.get("GOOGLE_API_KEY"))
         
         system_prompt = (
-            "You are an AI assistant helping a user understand their medical bill analysis. "
-            "You are friendly, professional, and knowledgeable. Only rely on the context provided. "
-            "Here is the detailed context about the bill and its analysis:\n"
-            f"Context: {json.dumps(request.context)}\n\n"
-            "Answer the user's questions based on this context. Be clear and concise."
+            "You are an AI assistant helping a user understand their medical bill analysis.\n\n"
+            "Your role:\n"
+            "- Be concise, professional, and directly answer the question in 1-2 short sentences.\n"
+            "- Explain medical and billing terms simply.\n"
+            "- Do not hallucinate or guess missing data.\n\n"
+            "Context (Bill Data):\n"
+            f"{json.dumps(request.context)}\n\n"
+            "Formatting Rules (CRITICAL):\n"
+            "1. ALWAYS format your response in PLAIN TEXT. Do NOT use Markdown formatting (no asterisks for bold, no hash tags).\n"
+            "2. Use simple dashes (-) or numbers for lists.\n"
+            "3. Leave a blank line (double newline) between paragraphs and lists for readability.\n"
+            "4. KEEP IT SHORT. Do not summarize the entire bill unless explicitly asked. If the user asks 'Was I overcharged?', just tell them the total overcharge amount and name the top 2-3 items responsible.\n"
+            "5. Never start your response with the word 'Answer:' or 'Details:'. Just give the response naturally.\n\n"
+            "Only respond based on the provided context."
         )
         
-        langchain_messages = [{"role": "system", "content": system_prompt}]
+        contents = []
         for msg in request.messages:
-            langchain_messages.append({"role": msg.role, "content": msg.content})
+            # map roles appropriately for Gemini
+            role = "user" if msg.role == "user" else "model"
+            contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg.content)]))
             
         def event_stream():
             try:
-                for chunk in client.stream(langchain_messages, chat_template_kwargs={"thinking":True}):
-                    if chunk.additional_kwargs and "reasoning_content" in chunk.additional_kwargs:
-                        reasoning = chunk.additional_kwargs["reasoning_content"]
-                        yield f"data: {json.dumps({'type': 'reasoning', 'content': reasoning})}\n\n"
-                    
-                    if chunk.content:
-                        yield f"data: {json.dumps({'type': 'content', 'content': chunk.content})}\n\n"
+                response_stream = client.models.generate_content_stream(
+                    model="gemini-2.5-flash",
+                    contents=contents,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                        temperature=0.7,
+                    )
+                )
+                for chunk in response_stream:
+                    if chunk.text:
+                        yield f"data: {json.dumps({'type': 'content', 'content': chunk.text})}\n\n"
                 
                 yield "data: [DONE]\n\n"
             except Exception as stream_e:

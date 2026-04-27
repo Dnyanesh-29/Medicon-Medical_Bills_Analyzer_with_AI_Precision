@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Bill - Realistic Padding</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e5ec;
+            margin: 0;
+            padding: 40px;
+        }
+        .bill-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            color: #555;
+            font-size: 13px;
+        }
+        .patient-details {
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .patient-details table {
+            width: 100%;
+        }
+        .patient-details td {
+            padding: 6px 0;
+        }
+        .patient-details td:nth-child(even) {
+            text-align: right;
+        }
+        .bill-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .bill-table th, .bill-table td {
+            border-bottom: 1px solid #eee;
+            padding: 12px 10px;
+            text-align: right;
+        }
+        .bill-table th {
+            border-bottom: 2px solid #ccc;
+            font-weight: bold;
+            color: #333;
+        }
+        .bill-table th:first-child, .bill-table td:first-child {
+            text-align: left;
+            width: 50%;
+        }
+        .category-header {
+            text-align: left !important;
+            font-weight: bold;
+            background-color: #f8f9fa !important;
+            color: #2c3e50;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        .totals {
+            width: 40%;
+            margin-left: auto;
+            font-size: 14px;
+        }
+        .totals table {
+            width: 100%;
+        }
+        .totals td {
+            padding: 8px 0;
+            text-align: right;
+        }
+        .totals .grand-total {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+            border-top: 2px solid #333;
+            border-bottom: 2px solid #333;
+        }
+        table, .patient-details, .header, .totals {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bill-container">
+    <div class="header">
+        <h1>APEX HEALTHCARE INSTITUTE</h1>
+        <p>45 Wellness Blvd, Sector 9, Mumbai, Maharashtra - 400012</p>
+        <p>Phone: 022-88889999 | Email: accounts@apexhealth.in</p>
+      
+    </div>
+
+    <div style="text-align: center; margin-bottom: 25px; background: #f0f4f8; padding: 8px; font-weight: bold; border-radius: 4px; color: #2c3e50; border: 1px solid #dce4ec;">
+        FINAL INPATIENT BILL
+    </div>
+
+    <div class="patient-details">
+        <table>
+            <tr>
+                <td><strong>Bill No:</strong> APX/26/11045</td>
+                <td><strong>UHID:</strong> APX-00441</td>
+            </tr>
+            <tr>
+                <td><strong>Patient:</strong> Mr. Sanjay Verma</td>
+                <td><strong>Age/Sex:</strong> 55 Years / Male</td>
+            </tr>
+            <tr>
+                <td><strong>Adm. Date:</strong> 10-May-2026 08:00 AM</td>
+                <td><strong>Disch. Date:</strong> 12-May-2026 09:00 AM</td>
+            </tr>
+            <tr>
+                <td><strong>Stay Duration:</strong> 2 Days</td>
+                <td><strong>Policy No:</strong> CORPORATE-INS</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="bill-table">
+        <thead>
+            <tr>
+                <th>ITEM DESCRIPTION</th>
+                <th>QTY</th>
+                <th>RATE (₹)</th>
+                <th>AMOUNT (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="4" class="category-header">A. ROOM CHARGES</td></tr>
+            <tr>
+                <td>Semi-Private AC Room - Per Day</td>
+                <td>4</td>
+                <td>3,000.00</td>
+                <td>12,000.00</td>
+            </tr>
+            <tr>
+                <td>Nursing Charges - Per Day</td>
+                <td>4</td>
+                <td>1,000.00</td>
+                <td>4,000.00</td>
+            </tr>
+            
+            <tr><td colspan="4" class="category-header">B. DOCTOR VISITS</td></tr>
+            <tr>
+                <td>Consultation OPD</td>
+                <td>6</td>
+                <td>350.00</td>
+                <td>2,100.00</td>
+            </tr>
+            <tr>
+                <td>Dietician Consultation</td>
+                <td>2</td>
+                <td>350.00</td>
+                <td>700.00</td>
+            </tr>
+
+            <tr><td colspan="4" class="category-header">C. INVESTIGATIONS</td></tr>
+            <tr>
+                <td>ECG</td>
+                <td>4</td>
+                <td>175.00</td>
+                <td>700.00</td>
+            </tr>
+            <tr>
+                <td>Complete Blood Count (CBC)</td>
+                <td>4</td>
+                <td>140.00</td>
+                <td>560.00</td>
+            </tr>
+            <tr>
+                <td>USG Abdomen & Pelvis</td>
+                <td>1</td>
+                <td>1,550.00</td>
+                <td>1,550.00</td>
+            </tr>
+
+            <tr><td colspan="4" class="category-header">D. PROCEDURES & ADMINISTRATION</td></tr>
+            <tr>
+                <td>Injection Administration</td>
+                <td>15</td>
+                <td>150.00</td>
+                <td>2,250.00</td>
+            </tr>
+            <tr>
+                <td>Physiotherapy Session</td>
+                <td>4</td>
+                <td>1,500.00</td>
+                <td>6,000.00</td>
+            </tr>
+            <tr>
+                <td>Wound Dressing</td>
+                <td>6</td>
+                <td>300.00</td>
+                <td>1,800.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td>GROSS TOTAL:</td>
+                <td>₹ 31,660.00</td>
+            </tr>
+            <tr>
+                <td>GST @ 5%:</td>
+                <td>₹ 1,583.00</td>
+            </tr>
+            <tr class="grand-total">
+                <td>TOTAL PAYABLE:</td>
+                <td>₹ 33,243.00</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

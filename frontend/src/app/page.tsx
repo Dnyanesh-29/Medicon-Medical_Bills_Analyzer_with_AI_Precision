@@ -38,7 +38,7 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <p className="text-center text-sm font-semibold text-slate-400 uppercase tracking-widest mb-8">Trusted Standards & Compliance</p>
           <div className="flex flex-wrap justify-center gap-12 md:gap-24 opacity-60 hover:opacity-100 transition-opacity duration-500">
-            {["CGHS Empanelled", "NABH Accredited", "ISO 27001", "HIPAA Compliant"].map((standard, i) => (
+            {["CGHS Empanelled", "NABH Accredited"].map((standard, i) => (
               <span key={i} className="text-xl md:text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <Shield className="w-6 h-6" /> {standard}
               </span>

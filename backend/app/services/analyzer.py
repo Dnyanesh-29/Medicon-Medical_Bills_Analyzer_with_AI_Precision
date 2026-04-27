@@ -159,11 +159,11 @@ class BillAnalyzer:
             quantity_anomalies=self._detect_quantity_anomalies(bill_data),
         )
 
-        # Timeline plausibility
-        timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data)
-
-        # Quantity anomaly detection (single pass — reuse from above)
+        # Quantity anomaly detection
         quantity_anomalies = self._detect_quantity_anomalies(bill_data)
+
+        # Timeline plausibility
+        timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data, quantity_anomalies)
 
         return BillAnalysisResult(
             hospital_name=bill_data.hospital_name,
@@ -280,11 +280,11 @@ class BillAnalyzer:
             quantity_anomalies=detected_anomalies,
         )
 
-        # Timeline plausibility
-        timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data)
-
         # Quantity anomaly detection (single pass — reuse from above)
         quantity_anomalies = detected_anomalies
+
+        # Timeline plausibility
+        timeline_score, timeline_conflicts = self._compute_timeline_score_and_conflicts(bill_data, quantity_anomalies)
 
         return BillAnalysisResult(
             hospital_name=bill_data.hospital_name,
@@ -443,7 +443,17 @@ class BillAnalyzer:
             },
         ]
 
-        all_rules = CONSUMABLE_RULES + CONSULTATION_RULES + LAB_RULES + MEAL_RULES + PHYSIO_RULES
+        ROOM_RULES = [
+            {
+                "keywords": ["room", "ward", "icu", "bed", "accommodation"],
+                "max_per_day": 1,
+                "severity_thresholds": {"high": 1.5, "medium": 1.1},
+                "label": "room days",
+                "reason": "Billed {qty} days of room/bed charges for a {days}-day stay. This is a direct timeline discrepancy and clear billing error.",
+            },
+        ]
+
+        all_rules = CONSUMABLE_RULES + CONSULTATION_RULES + LAB_RULES + MEAL_RULES + PHYSIO_RULES + ROOM_RULES
 
         for item in bill_data.items:
             name_lower = item.description.lower()
@@ -499,10 +509,10 @@ class BillAnalyzer:
 
         return anomalies
 
-    def _compute_timeline_score_and_conflicts(self, bill_data: BillData) -> tuple[int, list[str]]:
+    def _compute_timeline_score_and_conflicts(self, bill_data: BillData, quantity_anomalies: Optional[List[QuantityAnomaly]] = None) -> tuple[int, list[str]]:
         """
         Simple timeline plausibility: 10/10 = fully plausible, 0/10 = highly suspicious.
-        Uses only admission / discharge dates that are available in the bill.
+        Uses admission / discharge dates and quantity anomaly timeline mismatches.
         """
         score = 10
         conflicts: list[str] = []
@@ -538,6 +548,16 @@ class BillAnalyzer:
             conflicts.append("Very long recorded hospital stay; please verify admission and discharge dates.")
             score -= 2
 
+        # Quantity anomalies directly conflict with timeline
+        if quantity_anomalies:
+            for anomaly in quantity_anomalies:
+                if anomaly.severity == Severity.HIGH:
+                    conflicts.append(f"Timeline mismatch: {anomaly.reason}")
+                    score -= 3
+                elif anomaly.severity == Severity.MEDIUM:
+                    conflicts.append(f"Timeline mismatch: {anomaly.reason}")
+                    score -= 1
+
         score = max(0, min(10, score))
         return score, conflicts
 
@@ -549,6 +569,7 @@ class BillAnalyzer:
         total_overcharge: float,
         is_cghs: bool,
         quantity_anomalies: Optional[List] = None,
+        timeline_score: int = 10,
     ) -> tuple:
         """
         Heuristic fraud risk score (0–100) with simple breakdown.
@@ -659,6 +680,10 @@ class BillAnalyzer:
         if high_pkg:
             cg_points += min(10, high_pkg * 5)
 
+        unbundled_count = sum(1 for v in violations if "Unbundled" in v.description)
+        if unbundled_count > 0:
+            cg_points += min(15, unbundled_count * 8)
+
         if not is_cghs:
             # For non-CGHS, treat this as overpricing signal but at half weight
             cg_points = int(cg_points * 0.5)
@@ -674,22 +699,9 @@ class BillAnalyzer:
             bis_points += min(10, bis_med * 4)
         bis_points = min(20, bis_points)
 
-        # Temporal anomalies (0–10)
-        temporal_points = 0
-        if not bill_data.admission_date or not bill_data.discharge_date:
-            temporal_points += 4
-        else:
-            try:
-                from datetime import datetime
-
-                a = datetime.fromisoformat(bill_data.admission_date)
-                d = datetime.fromisoformat(bill_data.discharge_date)
-                if d < a:
-                    temporal_points = 10
-            except Exception:
-                # If dates cannot be parsed, treat as mild anomaly
-                temporal_points = max(temporal_points, 3)
-        temporal_points = min(10, temporal_points)
+        # Temporal anomalies (0–20)
+        temporal_points = max(0, (10 - timeline_score) * 2)
+        temporal_points = min(20, temporal_points)
 
         # Quantity / consumable padding (0–15)
         # Replaces the old narrow CGHS-rate-only consumable check.
@@ -782,6 +794,17 @@ class BillAnalyzer:
             added_prob = min(18, (total_overcharge / 10000.0) * 8.0)
             prob += added_prob
             reasons.append(f"CGHS Overcharge (+{added_prob:.1f}% risk): Billed amount exceeds statutory limits for empanelled hospitals.")
+            
+            if bill_data.total_amount and total_overcharge > (0.5 * bill_data.total_amount):
+                prob += 25
+                reasons.append("Extreme Overcharging (+25.0% risk): Total overcharge exceeds 50% of the entire bill amount. This routinely triggers mandatory TPA audits.")
+
+        # Unbundled charges
+        unbundled_count = sum(1 for v in violations if "Unbundled" in v.description)
+        if unbundled_count > 0:
+            added_prob = min(25, unbundled_count * 10)
+            prob += added_prob
+            reasons.append(f"Unbundled Charges Detected ({unbundled_count} instances) (+{added_prob:.1f}% risk): Insurers strictly reject separate billing for items that should be part of a package or room rent.")
 
         # Balance billing deviation vs pre-auth
         balance_billing_v = next(

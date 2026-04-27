@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Bill - Fake</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e5ec;
+            margin: 0;
+            padding: 40px;
+        }
+        .bill-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #1a4f8b;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #1a4f8b;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            color: #555;
+            font-size: 13px;
+        }
+        .patient-details {
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .patient-details table {
+            width: 100%;
+        }
+        .patient-details td {
+            padding: 6px 0;
+        }
+        .patient-details td:nth-child(even) {
+            text-align: right;
+        }
+        .bill-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .bill-table th, .bill-table td {
+            border-bottom: 1px solid #eee;
+            padding: 12px 10px;
+            text-align: right;
+        }
+        .bill-table th {
+            border-bottom: 2px solid #ccc;
+            font-weight: bold;
+            color: #333;
+        }
+        .bill-table th:first-child, .bill-table td:first-child {
+            text-align: left;
+            width: 55%;
+        }
+        .category-header {
+            text-align: left !important;
+            font-weight: bold;
+            background-color: #f8f9fa !important;
+            color: #1a4f8b;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        .totals {
+            width: 40%;
+            margin-left: auto;
+            font-size: 14px;
+        }
+        .totals table {
+            width: 100%;
+        }
+        .totals td {
+            padding: 8px 0;
+            text-align: right;
+        }
+        .totals .grand-total {
+            font-weight: bold;
+            font-size: 18px;
+            color: #1a4f8b;
+            border-top: 2px solid #333;
+            border-bottom: 2px solid #333;
+        }
+        .watermark {
+            position: absolute;
+            top: 100px;
+            right: 80px;
+            font-size: 60px;
+            color: rgba(0, 128, 0, 0.15);
+            border: 8px solid rgba(0, 128, 0, 0.15);
+            padding: 10px 30px;
+            transform: rotate(-25deg);
+            font-weight: bold;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* Relative z-index to bring text above watermark */
+        table, .patient-details, .header, .totals {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bill-container">
+    <div class="watermark">PAID</div>
+    <div class="header">
+        <h1>CITYCARE MULTISPECIALITY HOSPITAL</h1>
+        <p>123 Health Avenue, Medical District, Pune, Maharashtra - 411001</p>
+        <p>Phone: 020-55556666 | Email: billing@citycarehospital.com</p>
+        <p style="margin-top: 10px; font-weight: bold;">NABH Accredited | CGHS Empanelled (Code: PUN/992/2024)</p>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 25px; background: #f0f4f8; padding: 8px; font-weight: bold; border-radius: 4px; color: #1a4f8b; border: 1px solid #dce4ec;">
+        FINAL HOSPITAL BILL / DISCHARGE SUMMARY
+    </div>
+
+    <div class="patient-details">
+        <table>
+            <tr>
+                <td><strong>Bill No:</strong> CTY/2026/08421</td>
+                <td><strong>UHID:</strong> CTY-PT-99882</td>
+            </tr>
+            <tr>
+                <td><strong>Patient:</strong> Mr. Rohan Kapoor</td>
+                <td><strong>Age/Sex:</strong> 42 Years / Male</td>
+            </tr>
+            <tr>
+                <td><strong>Adm. Date:</strong> 18-Apr-2026 10:15 AM</td>
+                <td><strong>Disch. Date:</strong> 21-Apr-2026 12:30 PM</td>
+            </tr>
+            <tr>
+                <td><strong>Consultant:</strong> Dr. A. Sharma (Gen. Surgery)</td>
+                <td><strong>Policy No:</strong> SELF-PAY</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="bill-table">
+        <thead>
+            <tr>
+                <th>ITEM DESCRIPTION</th>
+                <th>QTY</th>
+                <th>RATE (₹)</th>
+                <th>AMOUNT (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="4" class="category-header">A. ROOM & CONSULTATION CHARGES</td></tr>
+            <tr>
+                <td>Semi-Private AC Room - Per Day</td>
+                <td>3</td>
+                <td>3,000.00</td>
+                <td>9,000.00</td>
+            </tr>
+            <tr>
+                <td>Consultation OPD</td>
+                <td>2</td>
+                <td>350.00</td>
+                <td>700.00</td>
+            </tr>
+            
+            <tr><td colspan="4" class="category-header">B. ICU & OBSERVATION</td></tr>
+            <tr>
+                <td>ICU Charges (Post-op observation)</td>
+                <td>1</td>
+                <td>8,000.00</td>
+                <td>8,000.00</td>
+            </tr>
+
+            <tr><td colspan="4" class="category-header">C. SURGERY & PROCEDURES</td></tr>
+            <tr>
+                <td>Laparoscopic Appendectomy Package</td>
+                <td>1</td>
+                <td>45,000.00</td>
+                <td>45,000.00</td>
+            </tr>
+
+            <tr><td colspan="4" class="category-header">D. INVESTIGATIONS & DIAGNOSTICS</td></tr>
+            <tr>
+                <td>Complete Blood Count (CBC)</td>
+                <td>1</td>
+                <td>120.00</td>
+                <td>120.00</td>
+            </tr>
+            <tr>
+                <td>Liver Function Test (LFT)</td>
+                <td>1</td>
+                <td>850.00</td>
+                <td>850.00</td>
+            </tr>
+
+            <tr><td colspan="4" class="category-header">E. PHARMACY & CONSUMABLES</td></tr>
+            <tr>
+                <td>N95 Respirator Mask</td>
+                <td>10</td>
+                <td>650.00</td>
+                <td>6,500.00</td>
+            </tr>
+            <tr>
+                <td>Consumables (Syringes/IV/Gloves)</td>
+                <td>1</td>
+                <td>8,400.00</td>
+                <td>8,400.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td>GROSS TOTAL:</td>
+                <td>₹ 78,570.00</td>
+            </tr>
+            <tr>
+                <td>GST @ 5%:</td>
+                <td>₹ 3,928.50</td>
+            </tr>
+            <tr class="grand-total">
+                <td>TOTAL PAYABLE:</td>
+                <td>₹ 82,498.50</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

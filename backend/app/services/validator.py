@@ -278,7 +278,6 @@ class SemanticRateValidator:
             r"\bmisc\b", "miscellaneous",
             "round off", r"\btax\b", r"\bgst\b", "service charge",
             "ward procedures", "treatment fee",
-            r"\bnursing\b",
         ]
         self._skip_patterns = [
             re.compile(p, re.IGNORECASE) for p in self._skip_terms_raw
@@ -344,7 +343,7 @@ class SemanticRateValidator:
 
         # ── LLM client (Gemini) ───────────────────────────────────────────
         self.llm_client = None
-        self.llm_model_name = "gemini-2.5-flash"
+        self.llm_model_name = "gemini-2.5-flash-lite"
 
         if GEMINI_AVAILABLE and getattr(settings, "GOOGLE_API_KEY", None):
             try:
@@ -512,10 +511,10 @@ class SemanticRateValidator:
             if charged <= effective_cghs:
                 continue
 
-            try:
+            if effective_cghs == 0:
+                deviation = 100.0
+            else:
                 deviation = ((charged - effective_cghs) / effective_cghs) * 100
-            except ZeroDivisionError:
-                continue
 
             if _safe_float(deviation) is None:
                 continue
@@ -551,16 +550,16 @@ class SemanticRateValidator:
                 enforceable = False
                 dispute_note = ""
 
+            if effective_cghs == 0:
+                desc_text = f"Invalid Unbundled Charge (matched: '{matched_proc}', confidence: {confidence:.0f}%){dispute_note}"
+            else:
+                desc_text = f"Exceeds CGHS reference by {deviation:.1f}% (matched: '{matched_proc}', confidence: {confidence:.0f}%){dispute_note}"
+
             violations.append(
                 Violation(
                     type=v_type,
                     severity=severity,
-                    description=(
-                        f"Exceeds CGHS reference by {deviation:.1f}% "
-                        f"(matched: '{matched_proc}', "
-                        f"confidence: {confidence:.0f}%)"
-                        f"{dispute_note}"
-                    ),
+                    description=desc_text,
                     item=item.description,
                     charged_amount=charged,
                     expected_amount=effective_cghs,   # ← scaled by qty
@@ -597,10 +596,10 @@ class SemanticRateValidator:
         if qty and qty > 1 and not _is_per_day_item(item.description):
             effective_cghs = cghs_rate * qty
 
-        try:
+        if effective_cghs == 0:
+            deviation = 100.0
+        else:
             deviation = ((charged - effective_cghs) / effective_cghs) * 100
-        except ZeroDivisionError:
-            return None
 
         if _safe_float(deviation) is None:
             return None
